@@ -1,0 +1,27 @@
+.release-class{
+    background-color:powderblue !important;
+    font-weight: bold;
+}
+
+.luanch-class{
+    background-color:burlywood !important;
+    font-weight: bold;
+}
+.relaxed-work{
+    font-weight: bold;
+    background-color:aliceblue;
+}
+.balanced-work{
+    background-color:antiquewhite;
+    font-weight: bold;
+}
+.overload-work{
+    font-weight: bold;
+    background-color:tomato
+}
+.weekenday-class{
+    background-color:  rgba(255, 99, 132, 0.3);
+}
+.weekenday-header-class{
+    background-color:  rgba(255, 99, 132, 0.3) !important;
+}
