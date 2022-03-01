@@ -7,7 +7,7 @@ function getProject(request) {
   );
 }
 function setTester(request) {
-  return axios.post(`${baseApi}/set/tester`, request);
+  return axios.post(`${baseApi}set/tester`, request);
 }
 
 export { getProject, setTester };

@@ -166,15 +166,17 @@ function ReleaseTable(props) {
     props.updateData(newData);
   };
   const handleSave = (row) => {
+    row.tester = (row.tester || []).join(",");
     const newData = [...data];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
     newData.splice(index, 1, { ...item, ...row });
-    setTester({ projectId: row.project, tester: row.tester }).then(
-      (response) => {
-        console.log(response);
-      }
-    );
+    setTester({
+      projectId: row.project,
+      tester: row.tester,
+    }).then((response) => {
+      console.log(response);
+    });
     updateData(newData);
   };
   return (

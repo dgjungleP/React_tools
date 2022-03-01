@@ -36,7 +36,7 @@ const EditableCell = ({
   const toggleEdit = () => {
     setEditing(!editing);
     form.setFieldsValue({
-      [dataIndex]: record[dataIndex],
+      [dataIndex]: record[dataIndex].split(","),
     });
   };
 
@@ -69,6 +69,7 @@ const EditableCell = ({
         <Select
           ref={inputRef}
           showSearch
+          mode="multiple"
           optionFilterProp="label"
           onChange={save}
           filterOption={(input, option) =>

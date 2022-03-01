@@ -185,7 +185,15 @@ function getDays(year, month) {
 //Method
 function groupData(tableData, year, month) {
   const result = selectors.map((data) => ({ name: data, dataList: [] }));
-  tableData
+  const groupData = tableData.flatMap((data) =>
+    data.tester.split(",").map((testerData) => {
+      const newData = {};
+      Object.assign(newData, data);
+      newData.tester = testerData;
+      return newData;
+    })
+  );
+  groupData
     .filter((data) => data.tester && data.tester != "None")
     .forEach((data) => {
       const item = { name: data.tester };
