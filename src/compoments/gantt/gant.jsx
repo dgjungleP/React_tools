@@ -41,7 +41,7 @@ function getDays(year, month) {
 function GanttTable(props) {
   const year = props.year;
   const month = props.month;
-
+  const simple = !props.simple;
   const columns = [
     {
       title: "name",
@@ -71,8 +71,8 @@ function GanttTable(props) {
       with: 100,
       align: "center",
       render: formatter(i),
-      onCell: colorCell(i, day, props.simple),
-      onHeaderCell: colorHeaderCell(i, day, props.simple),
+      onCell: colorCell(i, day, simple),
+      onHeaderCell: colorHeaderCell(i, day, simple),
     });
   }
   return (

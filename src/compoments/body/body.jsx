@@ -40,9 +40,9 @@ function Body(props) {
     const newQuery = JSON.parse(JSON.stringify(query));
     Object.assign(newQuery, parmas);
     newQuery.history = moment(new Date()).isAfter(
-      newQuery.year + "-" + newQuery.month + "-01"
+      newQuery.year + "-" + newQuery.month + "-01",
+      "month"
     );
-    debugger;
     updateQuery(newQuery);
     freashData(newQuery);
   };
