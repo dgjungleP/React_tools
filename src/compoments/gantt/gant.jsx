@@ -1,16 +1,14 @@
-import { Table, Form, Input } from "antd";
+import { Table, Input, Button, Space } from "antd";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import "antd/dist/antd.css";
 import "./gantt.css";
 import { setTester } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import moment from "moment";
+import { SearchOutlined } from "@ant-design/icons";
+import Highlighter from "react-highlight-words";
+import { Filter } from "../editable/filter";
 
-function checkWeekendDay(weekNumber, simple) {
-  return simple
-    ? weekNumber == 0 || weekNumber == 6
-    : weekNumber == 0 || weekNumber == 1;
-}
 function Gantt(props) {
   const year = props.query.year;
   const month = props.query.month;
@@ -31,11 +29,6 @@ function Gantt(props) {
       ></ReleaseTable>
     </>
   );
-}
-function getDays(year, month) {
-  month = parseInt(month, 10);
-  var d = new Date(year, month, 0);
-  return d.getDate();
 }
 
 function GanttTable(props) {
@@ -93,6 +86,55 @@ function GanttTable(props) {
 }
 
 function ReleaseTable(props) {
+  const [searchText, updateSearchText] = useState("");
+  const [searchedColumn, updateSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <Filter
+        setSelectedKeys={setSelectedKeys}
+        selectedKeys={selectedKeys}
+        confirm={confirm}
+        clearFilters={clearFilters}
+        handlSearchText={updateSearchText}
+        handlSearchedColumn={updateSearchedColumn}
+        dataIndex={dataIndex}
+        input={searchInput}
+      ></Filter>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+    onFilterDropdownVisibleChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
   const baseColumns = [
     {
       title: "Project",
@@ -108,6 +150,7 @@ function ReleaseTable(props) {
       title: "ProjectName",
       key: "ProjectName",
       dataIndex: "projectName",
+      ...getColumnSearchProps("projectName"),
     },
     {
       title: "Tester",
@@ -121,6 +164,7 @@ function ReleaseTable(props) {
       },
       filters: makeFilter(props.selectors),
       onFilter: (value, record) => record.tester.indexOf(value) === 0,
+      filterSearch: true,
     },
     {
       title: "ReleaseDay",
@@ -133,8 +177,8 @@ function ReleaseTable(props) {
       },
     },
     {
-      title: "LuanchDay",
-      key: "LuanchDay",
+      title: "LaunchDay",
+      key: "LaunchDay",
       dataIndex: "launchDay",
       sorter: {
         compare: (a, b) => {
@@ -143,7 +187,6 @@ function ReleaseTable(props) {
       },
     },
   ];
-
   const components = {
     body: {
       row: EditableRow,
@@ -186,6 +229,7 @@ function ReleaseTable(props) {
     });
     updateData(newData);
   };
+
   return (
     <>
       <div style={{ width: "60%", margin: "15px auto 0" }}>
@@ -201,6 +245,17 @@ function ReleaseTable(props) {
 }
 
 //Method
+
+function checkWeekendDay(weekNumber, simple) {
+  return simple
+    ? weekNumber == 0 || weekNumber == 6
+    : weekNumber == 0 || weekNumber == 1;
+}
+function getDays(year, month) {
+  month = parseInt(month, 10);
+  var d = new Date(year, month, 0);
+  return d.getDate();
+}
 
 function makeFilter(selectors) {
   return selectors.map((data) => {

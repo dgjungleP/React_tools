@@ -10,14 +10,17 @@
 .relaxed-work{
     font-weight: bold;
     background-color:aliceblue;
+    border: 1px solid rgb(224, 224, 224)
 }
 .balanced-work{
     background-color:antiquewhite;
     font-weight: bold;
+    border: 1px solid rgb(224, 224, 224)
 }
 .overload-work{
     font-weight: bold;
-    background-color:tomato
+    background-color:tomato;
+    border: 1px solid rgb(224, 224, 224)
 }
 .weekenday-class{
     background-color:  rgba(255, 99, 132, 0.3);
