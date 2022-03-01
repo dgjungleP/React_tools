@@ -86,7 +86,6 @@ function GanttTable(props) {
           pagination={false}
           bordered
           size="small"
-          scroll={{ x: 1200 }}
         ></Table>
       </div>
     </>
@@ -196,7 +195,7 @@ function ReleaseTable(props) {
 
 function groupUser() {
   return (record, index) => {
-    const result = {};
+    const result = { with: 200 };
     if (record.miss) {
       result.rowSpan = 0;
     } else {
@@ -230,7 +229,7 @@ function formatName(i) {
 function colorCell(i, day, simple) {
   return (record, index) => {
     const weekNumber = day.format("d");
-    let result = {};
+    let result = { with: 100 };
     let className = "";
     if (checkWeekendDay(weekNumber, simple)) {
       className += " weekenday-class ";
