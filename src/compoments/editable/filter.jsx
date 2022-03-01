@@ -51,7 +51,7 @@ function Filter(props) {
           >
             Reset
           </Button>
-          <Button
+          {/* <Button
             type="link"
             size="small"
             onClick={() => {
@@ -60,7 +60,7 @@ function Filter(props) {
             }}
           >
             Filter
-          </Button>
+          </Button> */}
         </Space>
       </div>
     </>
