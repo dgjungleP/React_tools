@@ -7,7 +7,7 @@ import { getProject } from "../../server/project-service";
 import moment from "moment";
 const { Option } = Select;
 const yearMonthFormatt = "yyyy-MM";
-
+const groups = ["website", "b2b", "mobile"];
 const selectors = [
   "None",
   "Shrek",
@@ -28,7 +28,7 @@ function Body(props) {
     history: false,
     year: date.getFullYear(),
     month: date.getMonth() + 1,
-    group: "website",
+    group: groups,
   });
 
   const [showGantt, setShowGant] = useState(false);
@@ -104,20 +104,12 @@ function Body(props) {
     </>
   );
 }
-function check(query) {
-  return (
-    Number.isInteger(query.year) &&
-    Number.isInteger(query.month) &&
-    query.history != undefined &&
-    query.group != undefined
-  );
-}
 
 function Header(props) {
   const query = props.query;
-  const groups = ["website", "b2b", "mobile"];
+
   const [time, updateTime] = useState({ year: query.year, month: query.month });
-  const [group, updateGroup] = useState([query.group]);
+  const [group, updateGroup] = useState([...query.group]);
   const [simple, updatSimple] = useState(false);
   const onTimeChange = (_, dateString) => {
     const newTime = JSON.parse(JSON.stringify(time));
@@ -158,7 +150,7 @@ function Header(props) {
           <span>Group:</span>{" "}
           <Select
             defaultValue={group}
-            style={{ width: 120 }}
+            style={{ width: 500 }}
             onChange={onGroupChange}
             mode="multiple"
           >
@@ -180,13 +172,20 @@ function Header(props) {
   );
 }
 
+//Method
+function check(query) {
+  return (
+    Number.isInteger(query.year) &&
+    Number.isInteger(query.month) &&
+    query.history != undefined &&
+    query.group != undefined
+  );
+}
 function getDays(year, month) {
   month = parseInt(month, 10);
   var d = new Date(year, month, 0);
   return d.getDate();
 }
-
-//Method
 function groupData(tableData, year, month) {
   const result = selectors.map((data) => ({ name: data, dataList: [] }));
   const groupData = tableData.flatMap((data) =>
