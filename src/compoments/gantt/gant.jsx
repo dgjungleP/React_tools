@@ -218,9 +218,9 @@ function groupUser() {
     }
     const dayCount = record.dayCount;
     let className = "";
-    if (dayCount < 5) {
+    if (dayCount < 20) {
       className = "relaxed-work";
-    } else if (dayCount < 15) {
+    } else if (dayCount < 40) {
       className = "balanced-work";
     } else {
       className = "overload-work";
