@@ -105,18 +105,8 @@ function ReleaseTable(props) {
       dataIndex: "crl_pb",
     },
     {
-      title: "Version",
-      key: "Version",
-      dataIndex: "version",
-    },
-    {
-      title: "Status",
-      key: "Status",
-      dataIndex: "status",
-    },
-    {
-      title: "ProjectNanme",
-      key: "ProjectNanme",
+      title: "ProjectName",
+      key: "ProjectName",
       dataIndex: "projectName",
     },
     {
@@ -124,16 +114,33 @@ function ReleaseTable(props) {
       key: "Tester",
       dataIndex: "tester",
       editable: true,
+      sorter: {
+        compare: (a, b) => {
+          return a.tester > b.tester ? -1 : 1;
+        },
+      },
+      filters: makeFilter(props.selectors),
+      onFilter: (value, record) => record.tester.indexOf(value) === 0,
     },
     {
       title: "ReleaseDay",
       key: "ReleaseDay",
       dataIndex: "releaseDay",
+      sorter: {
+        compare: (a, b) => {
+          return a.releaseDay > b.releaseDay ? -1 : 1;
+        },
+      },
     },
     {
       title: "LuanchDay",
       key: "LuanchDay",
       dataIndex: "launchDay",
+      sorter: {
+        compare: (a, b) => {
+          return a.launchDay > b.launchDay ? -1 : 1;
+        },
+      },
     },
   ];
 
@@ -194,6 +201,12 @@ function ReleaseTable(props) {
 }
 
 //Method
+
+function makeFilter(selectors) {
+  return selectors.map((data) => {
+    return { text: data, value: data };
+  });
+}
 
 function groupUser() {
   return (record, index) => {

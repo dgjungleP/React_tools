@@ -39,6 +39,10 @@ function Body(props) {
   const chanegQuery = (parmas) => {
     const newQuery = JSON.parse(JSON.stringify(query));
     Object.assign(newQuery, parmas);
+    newQuery.history = moment(new Date()).isAfter(
+      newQuery.year + "-" + newQuery.month + "-01"
+    );
+    debugger;
     updateQuery(newQuery);
     freashData(newQuery);
   };
