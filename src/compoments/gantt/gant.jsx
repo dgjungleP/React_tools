@@ -1,5 +1,5 @@
-import { Table, Input, Button, Space } from "antd";
-import React, { useState, useEffect, useRef, useContext } from "react";
+import { Table } from "antd";
+import React, { useState } from "react";
 import "antd/dist/antd.css";
 import "./gantt.css";
 import { setTester } from "../../server/project-service";
@@ -88,7 +88,6 @@ function GanttTable(props) {
 function ReleaseTable(props) {
   const [searchText, updateSearchText] = useState("");
   const [searchedColumn, updateSearchedColumn] = useState("");
-  const searchInput = useRef(null);
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -105,7 +104,6 @@ function ReleaseTable(props) {
         handlSearchText={updateSearchText}
         handlSearchedColumn={updateSearchedColumn}
         dataIndex={dataIndex}
-        input={searchInput}
       ></Filter>
     ),
     filterIcon: (filtered) => (
@@ -140,6 +138,7 @@ function ReleaseTable(props) {
       title: "Project",
       key: "Project",
       dataIndex: "project",
+      ...getColumnSearchProps("project"),
     },
     {
       title: "CRL/PB",

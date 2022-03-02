@@ -1,9 +1,10 @@
 import { Input, Button, Space } from "antd";
-import React from "react";
+import React, { useRef } from "react";
 import "antd/dist/antd.css";
 import { SearchOutlined } from "@ant-design/icons";
 
 function Filter(props) {
+  const searchInput = useRef(null);
   const setSelectedKeys = props.setSelectedKeys;
   const selectedKeys = props.selectedKeys;
   const confirm = props.confirm;
@@ -25,7 +26,7 @@ function Filter(props) {
     <>
       <div style={{ padding: 8 }}>
         <Input
-          ref={props.input}
+          ref={searchInput}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
           onChange={(e) =>
