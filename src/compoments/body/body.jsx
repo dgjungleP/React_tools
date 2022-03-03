@@ -183,7 +183,6 @@ function groupData(tableData, year, month, selectors) {
     dataList: [],
     index: index,
   }));
-  debugger;
   const groupData = tableData.flatMap((data) =>
     data.tester.split(",").map((testerData) => {
       const newData = {};
@@ -249,7 +248,6 @@ function getTime(dataItem, month, year) {
 
 function makeGanttTableData(tableDataGroup, month, year) {
   const ganttTableData = [];
-  debugger;
   tableDataGroup
     .filter((data) => data.name && data.name != "None")
     .sort((l, r) => l.index - r.index)
