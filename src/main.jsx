@@ -2,49 +2,36 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "antd/dist/antd.css";
 import "./main.css";
-import { ScheduleBody } from "./compoments/body/body";
-import { Layout, Menu, Tabs } from "antd";
+import { Layout, Menu } from "antd";
 import { PieChartOutlined, SettingOutlined } from "@ant-design/icons";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-const { Sider, Content } = Layout;
-const { TabPane } = Tabs;
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useLocation,
+} from "react-router-dom";
+import { ShceduleTab } from "./compoments/schedule/schedule";
+import { SystemConfig } from "./compoments/config/config";
+const { Sider } = Layout;
 function MyMenus(props) {
+  const location = useLocation();
+  const baseRoute = location.pathname.split("/")[1];
   return (
     <>
-      <Menu theme="light" defaultSelectedKeys={["1"]} mode="inline">
-        <Menu.Item key="1" icon={<PieChartOutlined />}>
+      <Menu theme="light" defaultSelectedKeys={[baseRoute]} mode="inline">
+        <Menu.Item key="schedule" icon={<PieChartOutlined />}>
           <Link to="/schedule">Schedule</Link>
         </Menu.Item>
 
-        <Menu.Item key="2" icon={<SettingOutlined />}>
+        <Menu.Item key="system" icon={<SettingOutlined />}>
           <Link to="/system">System Config</Link>
         </Menu.Item>
       </Menu>
     </>
   );
 }
-function SystemConfig(props) {
-  return <>hello</>;
-}
-function ShcedulTab(props) {
-  return (
-    <>
-      <Content className="card-container">
-        <Tabs defaultActiveKey="1" type="card">
-          <TabPane tab="Tab 1" key="1">
-            <ScheduleBody></ScheduleBody>
-          </TabPane>
-          <TabPane tab="Tab 2" key="2">
-            <ScheduleBody></ScheduleBody>
-          </TabPane>
-          <TabPane tab="Tab 3" key="3">
-            <ScheduleBody></ScheduleBody>
-          </TabPane>
-        </Tabs>
-      </Content>
-    </>
-  );
-}
+
 ReactDOM.render(
   <BrowserRouter>
     <React.StrictMode>
@@ -62,10 +49,13 @@ ReactDOM.render(
         >
           <MyMenus></MyMenus>
         </Sider>
-        <Layout style={{ marginLeft: 200 }}>
+        <Layout style={{ marginLeft: 200, padding: "0 24px 24px" }}>
           <Routes>
-            <Route path="/" element={<ShcedulTab></ShcedulTab>}></Route>
-            <Route path="/schedule" element={<ShcedulTab></ShcedulTab>}></Route>
+            <Route path="/" element={<ShceduleTab></ShceduleTab>}></Route>
+            <Route
+              path="/schedule"
+              element={<ShceduleTab></ShceduleTab>}
+            ></Route>
             <Route
               path="/system"
               element={<SystemConfig></SystemConfig>}

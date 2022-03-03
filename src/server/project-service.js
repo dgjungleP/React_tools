@@ -10,4 +10,19 @@ function setTester(request) {
   return axios.post(`${baseApi}set/tester`, request);
 }
 
-export { getProject, setTester };
+function updateSystemConfig(request) {
+  return axios.post(`${baseApi}system-config`, request);
+}
+function getSystemConfig(requst) {
+  return axios.get(`${baseApi}system-config`);
+}
+function deleteSystemConfig(requst) {
+  return axios.delete(`${baseApi}system-config/${requst.id}`);
+}
+export {
+  getProject,
+  setTester,
+  updateSystemConfig,
+  getSystemConfig,
+  deleteSystemConfig,
+};
