@@ -22,7 +22,7 @@ const selectors = [
   "Winnie",
   "Lillian",
 ];
-function Body(props) {
+function ScheduleBody(props) {
   const date = new Date();
   const [query, updateQuery] = useState({
     history: false,
@@ -337,4 +337,4 @@ function makeData(json) {
   return result;
 }
 
-export { Body };
+export { ScheduleBody };
