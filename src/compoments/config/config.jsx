@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "antd/dist/antd.css";
 import "./config.css";
 import {
@@ -19,7 +19,6 @@ import {
   getSystemConfig,
   updateSystemConfig,
 } from "../../server/project-service";
-import { useEffect } from "react/cjs/react.development";
 const { Content } = Layout;
 
 function SystemConfigModal(props) {
