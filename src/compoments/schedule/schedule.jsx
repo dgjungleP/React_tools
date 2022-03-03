@@ -3,23 +3,33 @@ import "antd/dist/antd.css";
 import "./schedule.css";
 import { ScheduleBody } from "../body/body";
 import { Layout, Tabs } from "antd";
+import { getSystemConfig } from "../../server/project-service";
+import { useEffect, useState } from "react/cjs/react.development";
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
 function ShceduleTab(props) {
+  const [systemList, setSystemList] = useState([]);
+  useEffect(() =>
+    getSystemConfig().then((response) => {
+      setSystemList(response.data);
+    })
+  );
+
   return (
     <>
       <Content className="card-container">
         <Tabs defaultActiveKey="1" type="card">
-          <TabPane tab="Tab 1" key="1">
-            <ScheduleBody></ScheduleBody>
-          </TabPane>
-          <TabPane tab="Tab 2" key="2">
-            <ScheduleBody></ScheduleBody>
-          </TabPane>
-          <TabPane tab="Tab 3" key="3">
-            <ScheduleBody></ScheduleBody>
-          </TabPane>
+          {systemList.map((system) => {
+            return (
+              <TabPane tab={system.systemName} key={system.id}>
+                <ScheduleBody
+                  groups={system.config.groupList}
+                  selectors={system.config.testerList}
+                ></ScheduleBody>
+              </TabPane>
+            );
+          })}
         </Tabs>
       </Content>
     </>

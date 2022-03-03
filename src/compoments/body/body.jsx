@@ -7,23 +7,12 @@ import { getProject } from "../../server/project-service";
 import moment from "moment";
 const { Option } = Select;
 const yearMonthFormatt = "yyyy-MM";
-const groups = ["website", "b2b", "mobile"];
-const selectors = [
-  "None",
-  "Shrek",
-  "Iris",
-  "Tina",
-  "Yiting",
-  "Vic",
-  "Cyson",
-  "Cindy",
-  "Yeva",
-  "Cheryl",
-  "Winnie",
-  "Lillian",
-];
+
 function ScheduleBody(props) {
   const date = new Date();
+  const [groups, setGroup] = useState(props.groups);
+  const [selectors, setSelectors] = useState(props.selectors);
+
   const [query, updateQuery] = useState({
     history: false,
     year: date.getFullYear(),
@@ -68,7 +57,7 @@ function ScheduleBody(props) {
     currentQuery = currentQuery ? currentQuery : query;
     updateLoading(true);
     const newGanttData = makeGanttTableData(
-      groupData(newTableData, currentQuery.year, currentQuery.month),
+      groupData(newTableData, currentQuery.year, currentQuery.month, selectors),
       currentQuery.month,
       currentQuery.year
     );
@@ -89,6 +78,7 @@ function ScheduleBody(props) {
         onQueryChange={chanegQuery}
         query={query}
         onSimpleChange={updateSimple}
+        groups={groups}
       ></Header>
       <Spin spinning={loading}>
         <Gantt
@@ -154,7 +144,7 @@ function Header(props) {
             onChange={onGroupChange}
             mode="multiple"
           >
-            {groups.map((data) => {
+            {props.groups.map((data) => {
               return (
                 <Option value={data} key={data}>
                   {data}
@@ -186,8 +176,14 @@ function getDays(year, month) {
   var d = new Date(year, month, 0);
   return d.getDate();
 }
-function groupData(tableData, year, month) {
-  const result = selectors.map((data) => ({ name: data, dataList: [] }));
+function groupData(tableData, year, month, selectors) {
+  let count = selectors.length;
+  const result = selectors.map((data, index) => ({
+    name: data,
+    dataList: [],
+    index: index,
+  }));
+  debugger;
   const groupData = tableData.flatMap((data) =>
     data.tester.split(",").map((testerData) => {
       const newData = {};
@@ -217,8 +213,12 @@ function groupData(tableData, year, month) {
           }
         }
       }
+      let index = (
+        result.find((data) => data.name == item.name) || { index: -1 }
+      ).index;
       if (tag) {
         item.dataList = [data];
+        item.index = index > 0 ? index : ++count;
         result.push(item);
       }
     });
@@ -249,14 +249,10 @@ function getTime(dataItem, month, year) {
 
 function makeGanttTableData(tableDataGroup, month, year) {
   const ganttTableData = [];
+  debugger;
   tableDataGroup
     .filter((data) => data.name && data.name != "None")
-    .sort((l, r) => {
-      if (l.name > r.name) {
-        return -1;
-      }
-      return 1;
-    })
+    .sort((l, r) => l.index - r.index)
     .forEach((data, index) => {
       const result = { key: index, rowSpan: 1, missCol: [], dayCount: 0 };
       result.name = data.name;

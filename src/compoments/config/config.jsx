@@ -12,6 +12,7 @@ import {
   message,
   Card,
   Popconfirm,
+  Spin,
 } from "antd";
 import {
   deleteSystemConfig,
@@ -31,7 +32,6 @@ function SystemConfigModal(props) {
     if (preConfig == config) {
       return;
     }
-    debugger;
     setSystemName(config.systemName);
     setGroupList(config.groupList);
     setTesterList(config.testerList);
@@ -49,10 +49,9 @@ function SystemConfigModal(props) {
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
-    setTimeout(() => props.freashData(), 200);
+    setTimeout(() => props.freashData(), 500);
   };
   const handleClose = () => {
-    debugger;
     props.setVisible(false);
     cleanStatus();
   };
@@ -64,7 +63,6 @@ function SystemConfigModal(props) {
     props.setSelectedSystem({});
   };
   const checklimit = () => {
-    debugger;
     if (!systemName) {
       message.warning("Please input your system name", 5);
       return false;
@@ -80,7 +78,6 @@ function SystemConfigModal(props) {
     return true;
   };
   const handleSystemChange = (event) => {
-    debugger;
     setSystemName(event.target.value);
   };
 
@@ -130,9 +127,13 @@ function SystemConfig(props) {
   const [visible, setVisible] = useState(false);
   const [systemConfigs, setSystemConfigs] = useState([]);
   const [selectedSystem, setSelectedSystem] = useState({});
+  const [loading, setLoading] = useState(false);
   const freshData = () => {
+    setLoading(true);
+    setSystemConfigs([]);
     getSystemConfig().then((response) => {
       setSystemConfigs(response.data);
+      setLoading(false);
     });
   };
   const editSystem = (systemConfig) => {
@@ -169,58 +170,60 @@ function SystemConfig(props) {
           freashData={freshData}
           config={selectedSystem}
         ></SystemConfigModal>
-        <Row gutter={16} style={{ marginTop: 24 }}>
-          {systemConfigs.map((systemConfig) => {
-            const config = systemConfig.config;
-            return (
-              <Col span={4} key={systemConfig.id}>
-                <Card
-                  type="inner"
-                  title={systemConfig.systemName}
-                  extra={
-                    <div>
-                      <a onClick={() => editSystem(systemConfig)}>Edit</a>
-                      <Popconfirm
-                        title="Are you sure to delete this task?"
-                        onConfirm={() => delteSystem(systemConfig)}
-                        okText="Yes"
-                        cancelText="No"
-                      >
-                        <a style={{ marginLeft: 5, color: "red" }}>Delete</a>
-                      </Popconfirm>
-                    </div>
-                  }
-                  style={{ width: 300 }}
-                >
-                  <Col>
-                    <Row>
-                      <span>Group List:</span>
-                    </Row>
-                    <Row>
-                      <Select
-                        mode="multiple"
-                        defaultValue={config.groupList}
-                        disabled
-                        style={{ width: "100%" }}
-                      ></Select>
-                    </Row>
-                    <Row>
-                      <span>Tester List:</span>
-                    </Row>
-                    <Row>
-                      <Select
-                        mode="multiple"
-                        defaultValue={config.testerList}
-                        style={{ width: "100%" }}
-                        disabled
-                      ></Select>
-                    </Row>
-                  </Col>
-                </Card>
-              </Col>
-            );
-          })}
-        </Row>
+        <Spin spinning={loading}>
+          <Row gutter={16} style={{ marginTop: 24 }}>
+            {systemConfigs.map((systemConfig) => {
+              const config = systemConfig.config;
+              return (
+                <Col span={4} key={systemConfig.id}>
+                  <Card
+                    type="inner"
+                    title={systemConfig.systemName}
+                    extra={
+                      <div>
+                        <a onClick={() => editSystem(systemConfig)}>Edit</a>
+                        <Popconfirm
+                          title="Are you sure to delete this system?"
+                          onConfirm={() => delteSystem(systemConfig)}
+                          okText="Yes"
+                          cancelText="No"
+                        >
+                          <a style={{ marginLeft: 5, color: "red" }}>Delete</a>
+                        </Popconfirm>
+                      </div>
+                    }
+                    style={{ width: 300 }}
+                  >
+                    <Col>
+                      <Row>
+                        <span>Group List:</span>
+                      </Row>
+                      <Row>
+                        <Select
+                          mode="multiple"
+                          defaultValue={config.groupList}
+                          disabled
+                          style={{ width: "100%" }}
+                        ></Select>
+                      </Row>
+                      <Row>
+                        <span>Tester List:</span>
+                      </Row>
+                      <Row>
+                        <Select
+                          mode="multiple"
+                          defaultValue={config.testerList}
+                          style={{ width: "100%" }}
+                          disabled
+                        ></Select>
+                      </Row>
+                    </Col>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </Spin>
       </Content>
     </>
   );
