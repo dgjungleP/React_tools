@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import "./schedule.css";
 import { ScheduleBody } from "../body/body";
 import { Layout, Tabs } from "antd";
 import { getSystemConfig } from "../../server/project-service";
-import { useEffect, useState } from "react/cjs/react.development";
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
