@@ -528,18 +528,5 @@ function colorHeaderCell(i, day, simple) {
     return result;
   };
 }
-function setWith() {
-  return (record) => {
-    console.log(record.key);
-    const weekNumber = day.format("d");
-    let result = {};
-    let className = "";
-    if (checkWeekendDay(weekNumber, simple)) {
-      className += " weekenday-header-class ";
-    }
-    result.className = className;
-    return result;
-  };
-}
 
 export { Gantt };
