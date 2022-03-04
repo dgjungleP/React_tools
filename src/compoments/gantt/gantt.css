@@ -2,8 +2,11 @@
     background-color:powderblue !important;
     font-weight: bold;
 }
-
-.luanch-class{
+.dayoff-class{
+    background-color: rgba(255, 99, 132, 0.3) !important;
+    font-weight: bold;
+}
+.launch-class{
     background-color:burlywood !important;
     font-weight: bold;
 }
@@ -23,8 +26,8 @@
     border: 1px solid rgb(224, 224, 224)
 }
 .weekenday-class{
-    background-color:  rgba(255, 99, 132, 0.3);
+    background-color:  lightgoldenrodyellow ;
 }
 .weekenday-header-class{
-    background-color:  rgba(255, 99, 132, 0.3) !important;
+    background-color:   lightgoldenrodyellow !important;
 }

@@ -1,17 +1,38 @@
-import { Table } from "antd";
+import {
+  Table,
+  Space,
+  Button,
+  Modal,
+  Col,
+  Row,
+  Select,
+  DatePicker,
+  Input,
+  Popconfirm,
+  message,
+} from "antd";
 import React, { useState } from "react";
 import "antd/dist/antd.css";
 import "./gantt.css";
-import { setTester } from "../../server/project-service";
+import {
+  deleteDayoff,
+  setTester,
+  updateDayoff,
+} from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
-
+const { RangePicker } = DatePicker;
+const { Option } = Select;
 function Gantt(props) {
   const year = props.query.year;
   const month = props.query.month;
+  const group = props.query.group;
+  const freshData = () => {
+    props.updateData(props.tableData);
+  };
   return (
     <>
       <div style={{ display: props.showGantt ? "" : "none" }}>
@@ -27,6 +48,14 @@ function Gantt(props) {
         updateData={props.updateData}
         selectors={props.selectors}
       ></ReleaseTable>
+      <DayOffTable
+        year={year}
+        month={month}
+        group={group}
+        data={props.dayoffData}
+        freshData={freshData}
+        system={props.system}
+      ></DayOffTable>
     </>
   );
 }
@@ -214,6 +243,7 @@ function ReleaseTable(props) {
   const updateData = (newData) => {
     props.updateData(newData);
   };
+
   const handleSave = (row) => {
     row.tester = (row.tester || []).join(",");
     const newData = [...data];
@@ -239,6 +269,174 @@ function ReleaseTable(props) {
           dataSource={data}
         ></Table>
       </div>
+    </>
+  );
+}
+function DayOffRequest(props) {
+  const systemConfig = props.system;
+  const [user, setUser] = useState();
+  const [time, setTime] = useState();
+  const [system, setSystem] = useState(systemConfig.systemName);
+
+  const checkValid = () => {
+    if (!user) {
+      message.warning("Please select user");
+      return true;
+    }
+    if (!time) {
+      message.warning("Please select time");
+      return true;
+    }
+    return false;
+  };
+  const handleSumbit = () => {
+    if (checkValid()) {
+      return;
+    }
+    const request = { tester: user, systemName: system };
+    request.startTime = time[0].format("YYYY-MM-DD");
+    request.endTime = time[1].format("YYYY-MM-DD");
+    request.days = time[1].diff(time[0], "days");
+    console.log(request);
+    updateDayoff([request]).then((response) => {
+      props.changeVisible(false);
+      message.success("Create Day off success!");
+      setTimeout(() => {
+        props.freshData();
+        cleanStatus();
+      }, 200);
+    });
+  };
+  const handleCancel = () => {
+    props.changeVisible(false);
+    cleanStatus();
+  };
+  const cleanStatus = () => {
+    setTime();
+    setUser();
+  };
+  return (
+    <>
+      <Modal
+        title="Request Dayoff"
+        centered
+        visible={props.visible}
+        onOk={handleSumbit}
+        onCancel={handleCancel}
+        width={500}
+      >
+        <Col>
+          <Row>
+            <span>User:</span>
+            <Select
+              style={{ width: "100%" }}
+              value={user}
+              onChange={(value) => setUser(value)}
+            >
+              {systemConfig.testerList.map((tester) => {
+                return (
+                  <Option value={tester} key={tester}>
+                    {tester}
+                  </Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row>
+            <span>Time:</span>
+            <RangePicker
+              style={{ width: "100%" }}
+              value={time}
+              onChange={(value) => setTime(value)}
+            ></RangePicker>
+          </Row>
+          <Row>
+            <span>System:</span>
+            <Input style={{ width: "100%" }} value={system} disabled></Input>
+          </Row>
+        </Col>
+      </Modal>
+    </>
+  );
+}
+
+function DayOffTable(props) {
+  const [visible, setVisible] = useState(false);
+  const data = [...props.data];
+
+  const columns = [
+    {
+      title: "Index",
+      dataIndex: "index",
+      key: "index",
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "StartTime",
+      dataIndex: "startTime",
+      key: "startTime",
+      render: (time) => {
+        return time.split(" ")[0];
+      },
+    },
+    {
+      title: "EndTime",
+      dataIndex: "endTime",
+      key: "endTime",
+      render: (time) => {
+        return time.split(" ")[0];
+      },
+    },
+    {
+      title: "DayOff",
+      dataIndex: "days",
+      key: "days",
+    },
+    {
+      title: "System",
+      dataIndex: "systemName",
+      key: "systemName",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => (
+        <Space size="middle">
+          <Popconfirm
+            title="Are you sure to delete this task?"
+            onConfirm={() =>
+              deleteDayoff(record).then((response) => {
+                message.success("Delete success!");
+                props.freshData();
+              })
+            }
+            onCancel={() => console.log("撤销")}
+            okText="Yes"
+            cancelText="No"
+          >
+            <a>Delete</a>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
+  return (
+    <>
+      <Button type="primary" onClick={() => setVisible(true)}>
+        Request Dayoff
+      </Button>
+
+      <DayOffRequest
+        visible={visible}
+        changeVisible={setVisible}
+        freshData={props.freshData}
+        system={props.system}
+      ></DayOffRequest>
+      <Table dataSource={data} columns={columns}></Table>
     </>
   );
 }
@@ -300,20 +498,13 @@ function colorCell(i, day, simple) {
     const weekNumber = day.format("d");
     let result = { with: 100 };
     let className = "";
-    if (checkWeekendDay(weekNumber, simple)) {
-      className += " weekenday-class ";
-    }
+    // if (checkWeekendDay(weekNumber, simple)) {
+    //   className += " weekenday-class ";
+    // }
     if (record.missCol.findIndex((data) => data === i) < 0) {
       if (record[i]) {
         const tail = record[i];
-        switch (tail.split("-")[1]) {
-          case "Release":
-            className += " release-class ";
-            break;
-          case "Launch":
-            className += " luanch-class ";
-            break;
-        }
+        className += " " + tail.split("-")[1].toLowerCase() + "-class ";
         result.colSpan = new Number(tail.split("-")[2]);
       }
     } else {

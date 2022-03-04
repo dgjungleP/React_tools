@@ -3,21 +3,23 @@ import { DatePicker, Switch, Select, Row, Col, Spin } from "antd";
 import "antd/dist/antd.css";
 import "./body.css";
 import { Gantt } from "../gantt/gant";
-import { getProject } from "../../server/project-service";
+import { getDayoff, getProject } from "../../server/project-service";
 import moment from "moment";
 const { Option } = Select;
 const yearMonthFormatt = "yyyy-MM";
 
 function ScheduleBody(props) {
   const date = new Date();
-  const [groups, setGroup] = useState(props.groups);
-  const [selectors, setSelectors] = useState(props.selectors);
+  const systemConfig = props.systemConfig;
+  const [groups, setGroup] = useState(systemConfig.groupList);
+  const [selectors, setSelectors] = useState(systemConfig.testerList);
 
   const [query, updateQuery] = useState({
     history: false,
     year: date.getFullYear(),
     month: date.getMonth() + 1,
     group: groups,
+    system: systemConfig.systemName,
   });
 
   const [showGantt, setShowGant] = useState(false);
@@ -25,6 +27,7 @@ function ScheduleBody(props) {
   const [ganttTableData, updateganttTableData] = useState([]);
   const [loading, updateLoading] = useState(false);
   const [simple, updateSimple] = useState(false);
+  const [dayoffTable, updateDayoffTable] = useState([]);
   const chanegQuery = (parmas) => {
     const newQuery = JSON.parse(JSON.stringify(query));
     Object.assign(newQuery, parmas);
@@ -56,14 +59,35 @@ function ScheduleBody(props) {
   const chanDage = (newTableData, currentQuery) => {
     currentQuery = currentQuery ? currentQuery : query;
     updateLoading(true);
-    const newGanttData = makeGanttTableData(
-      groupData(newTableData, currentQuery.year, currentQuery.month, selectors),
-      currentQuery.month,
-      currentQuery.year
-    );
-    updateganttTableData(newGanttData);
-    updateTableData(newTableData);
-    updateLoading(false);
+    getDayoff(currentQuery).then((response) => {
+      let newDayoffTableData = response.data;
+      newDayoffTableData = newDayoffTableData.map((dayoff, index) => {
+        dayoff.key = dayoff.id;
+        dayoff.index = index + 1;
+        dayoff.name = dayoff.tester;
+        dayoff.releaseDay = dayoff.startTime;
+        dayoff.launchDay = dayoff.endTime;
+        dayoff.type = "dayoff";
+        dayoff.project = "休";
+        return dayoff;
+      });
+      const tableDataMerge = [...newTableData, ...newDayoffTableData];
+      console.log(tableDataMerge);
+      updateDayoffTable(newDayoffTableData);
+      const newGanttData = makeGanttTableData(
+        groupData(
+          tableDataMerge,
+          currentQuery.year,
+          currentQuery.month,
+          selectors
+        ),
+        currentQuery.month,
+        currentQuery.year
+      );
+      updateganttTableData(newGanttData);
+      updateTableData(newTableData);
+      updateLoading(false);
+    });
   };
   const flushDate = (responseData, query) => {
     const newTableData = makeData(responseData);
@@ -86,9 +110,11 @@ function ScheduleBody(props) {
           showGantt={showGantt}
           tableData={tableData}
           ganttTableData={ganttTableData}
+          dayoffData={dayoffTable}
           updateData={chanDage}
           selectors={selectors}
           simple={simple}
+          system={systemConfig}
         ></Gantt>
       </Spin>
     </>
@@ -184,7 +210,7 @@ function groupData(tableData, year, month, selectors) {
     index: index,
   }));
   const groupData = tableData.flatMap((data) =>
-    data.tester.split(",").map((testerData) => {
+    (data.tester || "None").split(",").map((testerData) => {
       const newData = {};
       Object.assign(newData, data);
       newData.tester = testerData;
@@ -301,12 +327,18 @@ function makeLine(dataList, result, month, year) {
     for (let i = start + 1; i < end; i++) {
       missCol.push(i);
     }
-    result[start] = data.project + "-Release-" + (end - start);
-    result[end] = data.project + "-Launch-1";
+    if (data.type && data.type == "dayoff") {
+      result[start] = data.project + "-Dayoff-" + (end - start + 1);
+      missCol.push(end);
+      // result[end] = data.project + "-Dayoff-1";
+    } else {
+      result[start] = data.project + "-Release-" + (end - start);
+      result[end] = data.project + "-Launch-1";
+      result.dayCount += end - start + 1;
+    }
     missCol.forEach((item) => {
       result.missCol.push(item);
     });
-    result.dayCount += end - start + 1;
   });
 }
 

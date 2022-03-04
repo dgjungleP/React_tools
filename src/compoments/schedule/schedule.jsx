@@ -9,10 +9,12 @@ const { TabPane } = Tabs;
 
 function ShceduleTab(props) {
   const [systemList, setSystemList] = useState([]);
-  useEffect(() =>
-    getSystemConfig().then((response) => {
-      setSystemList(response.data);
-    })
+  useEffect(
+    () =>
+      getSystemConfig().then((response) => {
+        setSystemList(response.data);
+      }),
+    []
   );
 
   return (
@@ -22,10 +24,7 @@ function ShceduleTab(props) {
           {systemList.map((system) => {
             return (
               <TabPane tab={system.systemName} key={system.id}>
-                <ScheduleBody
-                  groups={system.config.groupList}
-                  selectors={system.config.testerList}
-                ></ScheduleBody>
+                <ScheduleBody systemConfig={system.config}></ScheduleBody>
               </TabPane>
             );
           })}

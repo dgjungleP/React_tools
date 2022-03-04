@@ -13,11 +13,23 @@ function setTester(request) {
 function updateSystemConfig(request) {
   return axios.post(`${baseApi}system-config`, request);
 }
-function getSystemConfig(requst) {
+function getSystemConfig(request) {
   return axios.get(`${baseApi}system-config`);
 }
 function deleteSystemConfig(requst) {
   return axios.delete(`${baseApi}system-config/${requst.id}`);
+}
+
+function updateDayoff(request) {
+  return axios.post(`${baseApi}day-off`, request);
+}
+function getDayoff(request) {
+  return axios.get(
+    `${baseApi}day-off?year=${request.year}&month=${request.month}&history=${request.history}&system=${request.system}`
+  );
+}
+function deleteDayoff(requst) {
+  return axios.delete(`${baseApi}day-off/${requst.id}`);
 }
 export {
   getProject,
@@ -25,4 +37,7 @@ export {
   updateSystemConfig,
   getSystemConfig,
   deleteSystemConfig,
+  updateDayoff,
+  deleteDayoff,
+  getDayoff,
 };
