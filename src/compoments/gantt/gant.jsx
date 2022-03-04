@@ -69,7 +69,7 @@ function GanttTable(props) {
       title: "name",
       dataIndex: "name",
       key: "name",
-      with: 200,
+      width: 100,
       fixed: "left",
       align: "center",
       render: formatName(),
@@ -90,7 +90,7 @@ function GanttTable(props) {
       },
       dataIndex: day,
       key: day,
-      with: 100,
+      width: 60,
       align: "center",
       render: formatter(i),
       onCell: colorCell(i, day, simple),
@@ -108,6 +108,7 @@ function GanttTable(props) {
           pagination={false}
           bordered
           size="small"
+          scroll={{ x: 1600 }}
         ></Table>
       </div>
     </>
@@ -296,8 +297,7 @@ function DayOffRequest(props) {
     const request = { tester: user, systemName: system };
     request.startTime = time[0].format("YYYY-MM-DD");
     request.endTime = time[1].format("YYYY-MM-DD");
-    request.days = time[1].diff(time[0], "days");
-    console.log(request);
+    request.days = time[1].diff(time[0], "days") + 1;
     updateDayoff([request]).then((response) => {
       props.changeVisible(false);
       message.success("Create Day off success!");
@@ -517,6 +517,20 @@ function colorCell(i, day, simple) {
 }
 function colorHeaderCell(i, day, simple) {
   return (record) => {
+    console.log(record.key);
+    const weekNumber = day.format("d");
+    let result = {};
+    let className = "";
+    if (checkWeekendDay(weekNumber, simple)) {
+      className += " weekenday-header-class ";
+    }
+    result.className = className;
+    return result;
+  };
+}
+function setWith() {
+  return (record) => {
+    console.log(record.key);
     const weekNumber = day.format("d");
     let result = {};
     let className = "";

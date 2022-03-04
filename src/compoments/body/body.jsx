@@ -72,7 +72,6 @@ function ScheduleBody(props) {
         return dayoff;
       });
       const tableDataMerge = [...newTableData, ...newDayoffTableData];
-      console.log(tableDataMerge);
       updateDayoffTable(newDayoffTableData);
       const newGanttData = makeGanttTableData(
         groupData(
@@ -328,8 +327,12 @@ function makeLine(dataList, result, month, year) {
       missCol.push(i);
     }
     if (data.type && data.type == "dayoff") {
+      console.log(start, end);
+
       result[start] = data.project + "-Dayoff-" + (end - start + 1);
-      missCol.push(end);
+      if (start != end) {
+        missCol.push(end);
+      }
       // result[end] = data.project + "-Dayoff-1";
     } else {
       result[start] = data.project + "-Release-" + (end - start);
