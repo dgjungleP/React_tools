@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { DatePicker, Switch, Select, Row, Col, Spin } from "antd";
 import "antd/dist/antd.css";
 import "./body.css";
@@ -7,13 +7,11 @@ import { getDayoff, getProject } from "../../server/project-service";
 import moment from "moment";
 const { Option } = Select;
 const yearMonthFormatt = "yyyy-MM";
-
 function ScheduleBody(props) {
   const date = new Date();
   const systemConfig = props.systemConfig;
   const [groups, setGroup] = useState(systemConfig.groupList);
   const [selectors, setSelectors] = useState(systemConfig.testerList);
-
   const [query, updateQuery] = useState({
     history: false,
     year: date.getFullYear(),
@@ -94,7 +92,7 @@ function ScheduleBody(props) {
   };
   useEffect(() => {
     freashData(query);
-  }, []);
+  }, [query]);
   return (
     <>
       <Header

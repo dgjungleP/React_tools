@@ -26,16 +26,11 @@ function SystemConfigModal(props) {
   const [systemName, setSystemName] = useState();
   const [groupList, setGroupList] = useState();
   const [testerList, setTesterList] = useState();
-  const [preConfig, setPreConfig] = useState();
   useEffect(() => {
-    if (preConfig == config) {
-      return;
-    }
     setSystemName(config.systemName);
     setGroupList(config.groupList);
     setTesterList(config.testerList);
-    setPreConfig(config);
-  });
+  }, [config]);
   const handleOk = () => {
     if (!checklimit()) {
       cleanStatus();
