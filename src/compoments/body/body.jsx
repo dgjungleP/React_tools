@@ -324,17 +324,34 @@ function makeLine(dataList, result, month, year) {
     for (let i = start + 1; i < end; i++) {
       missCol.push(i);
     }
+    const memo = {};
+    memo.user = data.tester;
     if (data.type && data.type == "dayoff") {
-      console.log(start, end);
-
-      result[start] = data.project + "-Dayoff-" + (end - start + 1);
+      memo.type = "休假";
+      memo.startTime = data.releaseDay.split(" ")[0];
+      memo.days = end - start + 1;
+      result[start] =
+        data.project +
+        "-Dayoff-" +
+        (end - start + 1) +
+        "-&" +
+        JSON.stringify(memo);
       if (start != end) {
         missCol.push(end);
       }
       // result[end] = data.project + "-Dayoff-1";
     } else {
-      result[start] = data.project + "-Release-" + (end - start);
-      result[end] = data.project + "-Launch-1";
+      memo.type = "项目";
+      memo.project = data.project;
+      memo.startTime = data.releaseDay;
+      memo.endTime = data.launchDay;
+      result[start] =
+        data.project +
+        "-Release-" +
+        (end - start) +
+        "-&" +
+        JSON.stringify(memo);
+      result[end] = data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
       result.dayCount += end - start + 1;
     }
     missCol.forEach((item) => {

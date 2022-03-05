@@ -10,6 +10,7 @@ import {
   Input,
   Popconfirm,
   message,
+  Tooltip,
 } from "antd";
 import React, { useState } from "react";
 import "antd/dist/antd.css";
@@ -483,7 +484,62 @@ function groupUser() {
 }
 function formatter(i) {
   return (text, record, index) => {
-    return (record[i] || "").split("-")[0];
+    let tiltle = {};
+    if (record[i]) {
+      console.log(record[i]);
+      let memo = record[i].split("-&")[1];
+      console.log(memo);
+      memo = (memo || "{}").replace('/\\"/g', '"');
+      tiltle = JSON.parse(memo);
+    }
+    let bodyTemp;
+    if (tiltle.project) {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>Project: {tiltle.project}</span>
+          </Row>
+          <Row>
+            <span>ReleaseTime: {tiltle.startTime}</span>
+          </Row>
+          <Row>
+            <span>LaunchTime: {tiltle.endTime}</span>
+          </Row>
+        </>
+      );
+    } else {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>StartTime: {tiltle.startTime}</span>
+          </Row>
+
+          <Row>
+            <span>days: {tiltle.days}</span>
+          </Row>
+        </>
+      );
+    }
+
+    return (
+      <Tooltip
+        title={() => {
+          return (
+            <Col>
+              <Row>
+                <span>Type: {tiltle.type}</span>
+              </Row>
+              <Row>
+                <span>User: {tiltle.user}</span>
+              </Row>
+              {bodyTemp}
+            </Col>
+          );
+        }}
+      >
+        {(record[i] || "").split("-")[0]}
+      </Tooltip>
+    );
   };
 }
 
@@ -517,7 +573,6 @@ function colorCell(i, day, simple) {
 }
 function colorHeaderCell(i, day, simple) {
   return (record) => {
-    console.log(record.key);
     const weekNumber = day.format("d");
     let result = {};
     let className = "";
