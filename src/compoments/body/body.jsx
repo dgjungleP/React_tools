@@ -225,6 +225,9 @@ function groupData(tableData, year, month, selectors) {
             return getTime(dataItem, month, year);
           });
           const time = getTime(data, month, year);
+          if (item.name == "Shrek") {
+            debugger;
+          }
           if (
             checkTime(timeWindow, time.start, time.end) ||
             resultItem.dataList.length == 0
@@ -305,7 +308,7 @@ function checkTime(timeWindow, start, end) {
   const result =
     timeArray.findIndex((data) => data == start) < 0 &&
     timeArray.findIndex((data) => data == end) < 0 &&
-    (start > timeArray[timeArray.length - 1] || end < timeArray[0]);
+    (start < timeArray[timeArray.length - 1] || end > timeArray[0]);
   return result;
 }
 function getDateNumber(time) {
