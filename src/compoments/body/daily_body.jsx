@@ -65,6 +65,11 @@ function CurrentBody(props) {
   const [loading, setLoading] = useState(false);
   const baseColumns = [
     {
+      title: "Launch Day",
+      key: "launchDay",
+      dataIndex: "launchDay",
+    },
+    {
       title: "Project",
       key: "project",
       dataIndex: "project",
@@ -74,6 +79,9 @@ function CurrentBody(props) {
       key: "status",
       dataIndex: "status",
       editable: true,
+      render: (status) => {
+        return getTypeTag(status);
+      },
     },
     {
       title: "Module",
@@ -149,11 +157,8 @@ function CurrentBody(props) {
     getDailys({ timeList: timeWindow, group })
       .then((response) => {
         const data = response.data.map((pj) => {
-          const result = pj.dailyLaunch || {};
-          result.key = pj.projectNumber;
-          result.status = "1xx";
-          result.project = pj.projectNumber;
-          return result;
+          pj.key = pj.project;
+          return pj;
         });
         setData(data);
       })
@@ -183,10 +188,10 @@ function CurrentBody(props) {
         dataSource={data}
         loading={loading}
       ></Table>
-      <Row gutter={16} style={{ marginTop: 100 }}>
+      <Row gutter={[16, 5]} style={{ marginTop: 100 }}>
         {timeWindow.map((time) => {
           return (
-            <Col span={2} key={time}>
+            <Col span={3} key={time}>
               <TimeList time={time} group={group}></TimeList>
             </Col>
           );
@@ -215,16 +220,7 @@ function TimeList(props) {
   useEffect(() => {
     loadMoreData();
   }, []);
-  const getTypeTag = (status) => {
-    switch (status) {
-      case "LAUNCHED":
-        return <Tag color="success">已上线</Tag>;
-      case "ABANDON":
-        return <Tag color="error">Abandon</Tag>;
-      case "HOLD_ON":
-        return <Tag color="warning">Hold On</Tag>;
-    }
-  };
+
   return (
     <Card
       title={time}
@@ -239,8 +235,8 @@ function TimeList(props) {
           dataSource={data}
           renderItem={(item) => (
             <List.Item key={item.projectNumber}>
-              <span>Project: {item.projectNumber} </span>
-              {getTypeTag((item.dailyLaunch || {}).status)}
+              <span style={{ marginRight: 5 }}>{item.project} </span>
+              {getTypeTag(item.status)}
             </List.Item>
           )}
         />
@@ -276,4 +272,14 @@ function Header(props) {
   );
 }
 
+function getTypeTag(status) {
+  switch (status) {
+    case "LAUNCHED":
+      return <Tag color="success">Launched</Tag>;
+    case "ABANDON":
+      return <Tag color="error">Abandon</Tag>;
+    case "HOLD_ON":
+      return <Tag color="warning">Hold On</Tag>;
+  }
+}
 export { DailyBody };
