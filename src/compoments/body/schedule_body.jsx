@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { DatePicker, Switch, Select, Row, Col, Spin } from "antd";
 import "antd/dist/antd.css";
-import "./body.css";
+import "./schedule_body.css";
 import { Gantt } from "../gantt/gant";
 import { getDayoff, getProject } from "../../server/project-service";
 import moment from "moment";
@@ -225,9 +225,6 @@ function groupData(tableData, year, month, selectors) {
             return getTime(dataItem, month, year);
           });
           const time = getTime(data, month, year);
-          if (item.name == "Shrek") {
-            debugger;
-          }
           if (
             checkTime(timeWindow, time.start, time.end) ||
             resultItem.dataList.length == 0
@@ -373,7 +370,6 @@ function makeData(json) {
     base.version = item.pb[0].versionId;
     base.status = item.status;
     base.projectName = item.pb[0].projectName;
-    // base.tester = count % 2 == 0 ? "Tina" : "Vic";
     base.tester = item.tester;
     base.releaseDay = item.releaseDate;
     base.launchDay = item.launchDate;

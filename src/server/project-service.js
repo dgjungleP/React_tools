@@ -1,4 +1,5 @@
 import axios from "axios";
+import { func } from "prop-types";
 import { enviroment } from "../enviroments/enrivoment";
 const baseApi = enviroment.BASE_URL;
 function getProject(request) {
@@ -31,6 +32,15 @@ function getDayoff(request) {
 function deleteDayoff(requst) {
   return axios.delete(`${baseApi}day-off/${requst.id}`);
 }
+
+function getDailys(request) {
+  return axios.get(
+    `${baseApi}dailys?timeList=${request.timeList}&group=${request.group}`
+  );
+}
+function setDaliy(request) {
+  return axios.post(`${baseApi}set/daily`, request);
+}
 export {
   getProject,
   setTester,
@@ -40,4 +50,6 @@ export {
   updateDayoff,
   deleteDayoff,
   getDayoff,
+  getDailys,
+  setDaliy,
 };

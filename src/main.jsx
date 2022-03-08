@@ -3,7 +3,11 @@ import ReactDOM from "react-dom";
 import "antd/dist/antd.css";
 import "./main.css";
 import { Layout, Menu } from "antd";
-import { PieChartOutlined, SettingOutlined } from "@ant-design/icons";
+import {
+  PieChartOutlined,
+  SettingOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import {
   BrowserRouter,
   Routes,
@@ -11,7 +15,7 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import { ShceduleTab } from "./compoments/schedule/schedule";
+import { DailyTab, ShceduleTab } from "./compoments/schedule/schedule";
 import { SystemConfig } from "./compoments/config/config";
 const { Sider } = Layout;
 function MyMenus(props) {
@@ -23,7 +27,9 @@ function MyMenus(props) {
         <Menu.Item key="schedule" icon={<PieChartOutlined />}>
           <Link to="/schedule">Schedule</Link>
         </Menu.Item>
-
+        <Menu.Item key="daily" icon={<CalendarOutlined />}>
+          <Link to="/daily">Daily Launch</Link>
+        </Menu.Item>
         <Menu.Item key="system" icon={<SettingOutlined />}>
           <Link to="/system">System Config</Link>
         </Menu.Item>
@@ -56,6 +62,7 @@ ReactDOM.render(
               path="/schedule"
               element={<ShceduleTab></ShceduleTab>}
             ></Route>
+            <Route path="/daily" element={<DailyTab></DailyTab>}></Route>
             <Route
               path="/system"
               element={<SystemConfig></SystemConfig>}

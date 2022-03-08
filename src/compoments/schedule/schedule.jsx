@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import "./schedule.css";
-import { ScheduleBody } from "../body/body";
+import { ScheduleBody } from "../body/schedule_body";
 import { Layout, Tabs } from "antd";
 import { getSystemConfig } from "../../server/project-service";
+import { DailyBody } from "../body/daily_body";
 const { Content } = Layout;
 const { TabPane } = Tabs;
 
-function ShceduleTab(props) {
+function SystemTab(props) {
   const [systemList, setSystemList] = useState([]);
   useEffect(
     () =>
@@ -24,7 +25,7 @@ function ShceduleTab(props) {
           {systemList.map((system) => {
             return (
               <TabPane tab={system.systemName} key={system.id}>
-                <ScheduleBody systemConfig={system.config}></ScheduleBody>
+                {props.template(system)}
               </TabPane>
             );
           })}
@@ -33,5 +34,23 @@ function ShceduleTab(props) {
     </>
   );
 }
+function ShceduleTab(props) {
+  return (
+    <SystemTab
+      template={(system) => {
+        return <ScheduleBody systemConfig={system.config}></ScheduleBody>;
+      }}
+    ></SystemTab>
+  );
+}
+function DailyTab(props) {
+  return (
+    <SystemTab
+      template={(system) => {
+        return <DailyBody systemConfig={system.config}></DailyBody>;
+      }}
+    ></SystemTab>
+  );
+}
 
-export { ShceduleTab };
+export { ShceduleTab, DailyTab };

@@ -237,6 +237,7 @@ function ReleaseTable(props) {
           title: col.title,
           handleSave: handleSave,
           selectors: props.selectors,
+          type: "multiple",
         };
       },
     };
@@ -486,9 +487,7 @@ function formatter(i) {
   return (text, record, index) => {
     let tiltle = {};
     if (record[i]) {
-      console.log(record[i]);
       let memo = record[i].split("-&")[1];
-      console.log(memo);
       memo = (memo || "{}").replace('/\\"/g', '"');
       tiltle = JSON.parse(memo);
     }

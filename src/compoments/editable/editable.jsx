@@ -22,6 +22,7 @@ const EditableCell = ({
   record,
   handleSave,
   selectors,
+  type,
   ...restProps
 }) => {
   const [editing, setEditing] = useState(false);
@@ -69,7 +70,7 @@ const EditableCell = ({
         <Select
           ref={inputRef}
           showSearch
-          mode="multiple"
+          mode={type}
           optionFilterProp="label"
           onChange={save}
           filterOption={(input, option) =>
