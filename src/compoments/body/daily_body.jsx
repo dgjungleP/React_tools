@@ -5,17 +5,27 @@ import {
   Checkbox,
   Col,
   DatePicker,
+  Form,
   List,
+  Modal,
   Row,
   Spin,
   Table,
   Tag,
+  Button,
+  Input,
+  TimePicker,
+  InputNumber,
+  Select,
 } from "antd";
 import moment from "moment";
-import { getDailys } from "../../server/project-service";
+import { getDailys, setDaliy } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
+import { PlusCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
 const { RangePicker } = DatePicker;
+const { TextArea } = Input;
 const baseTimeFormat = "YYYY-MM-DD";
+const timeFotmat = "HH:mm";
 const status = ["LAUNCHED", "ABANDON", "HOLD_ON"];
 function DailyBody(props) {
   const systemConfig = props.systemConfig;
@@ -52,7 +62,7 @@ function DailyBody(props) {
       <Spin spinning={loading}>
         <CurrentBody
           timeWindow={timeWindow}
-          group={systemConfig.groupList}
+          systemConfig={systemConfig}
         ></CurrentBody>
       </Spin>
     </>
@@ -60,9 +70,12 @@ function DailyBody(props) {
 }
 function CurrentBody(props) {
   const timeWindow = props.timeWindow;
-  const group = props.group;
+  const systemConfig = props.systemConfig;
+  const group = systemConfig.groupList;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [modalVisiable, setModalVisiable] = useState(false);
+  const [currentDaily, setCurrentDaily] = useState({});
   const baseColumns = [
     {
       title: "Launch Day",
@@ -117,17 +130,28 @@ function CurrentBody(props) {
       title: "EM",
       key: "em",
       dataIndex: "em",
-      render: (em) => {
-        return <Checkbox></Checkbox>;
+      render: (em, record) => {
+        return (
+          <Checkbox
+            onClick={() => {
+              record.em = !record.em;
+              handleSave(record);
+            }}
+            checked={record.em}
+          ></Checkbox>
+        );
       },
     },
     {
       title: "Action",
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <a>Edit</a>,
+      render: (text, record) => {
+        return <a onClick={() => showModal(record)}>Edit</a>;
+      },
     },
   ];
+
   const components = {
     body: {
       row: EditableRow,
@@ -167,13 +191,22 @@ function CurrentBody(props) {
       });
   };
   const handleSave = (row) => {
-    row.tester = (row.tester || []).join(",");
     const newData = [...data];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
+    console.log(row);
     newData.splice(index, 1, { ...item, ...row });
-    console.log(newData);
-    setData(newData);
+    setLoading(true);
+    setDaliy(row)
+      .then((response) => {
+        setData(newData);
+        setLoading(false);
+      })
+      .finally(() => {});
+  };
+  const showModal = (daily) => {
+    setModalVisiable(true);
+    setCurrentDaily(daily);
   };
   useEffect(() => {
     freshTableData();
@@ -197,6 +230,14 @@ function CurrentBody(props) {
           );
         })}
       </Row>
+      <OperateModal
+        title={currentDaily.launchDay + "'s Project:" + currentDaily.project}
+        visible={modalVisiable}
+        data={currentDaily}
+        changeVisiable={setModalVisiable}
+        systemConfig={systemConfig}
+        fresh={freshTableData}
+      ></OperateModal>
     </>
   );
 }
@@ -232,6 +273,12 @@ function TimeList(props) {
     >
       <Spin spinning={loading}>
         <List
+          style={{
+            height: 300,
+            overflow: "auto",
+            padding: "0 16px",
+            border: "1px solid rgba(140, 140, 140, 0.35)",
+          }}
           dataSource={data}
           renderItem={(item) => (
             <List.Item key={item.projectNumber}>
@@ -272,6 +319,116 @@ function Header(props) {
   );
 }
 
+function OperateModal(props) {
+  const config = props.systemConfig;
+  const changeVisiable = props.changeVisiable;
+  const daily = props.data;
+  const [currentDaily, setCurrentDaily] = useState({});
+  const [form] = Form.useForm();
+  const handleOk = () => {
+    const formValues = form.getFieldsValue();
+    const request = {
+      ...currentDaily,
+      ...formValues,
+    };
+    request.moveIn = (request.moveIn || []).join(",");
+    request.effectTime = (request.effectTime || [])
+      .filter((data) => data)
+      .map((data) => {
+        return data[0].format(timeFotmat) + "-" + data[1].format(timeFotmat);
+      })
+      .join(",");
+    setDaliy(request).then((response) => {
+      console.log(response);
+    });
+    props.fresh();
+    changeVisiable(false);
+  };
+  const handleCancel = () => {
+    changeVisiable(false);
+  };
+  useEffect(() => {
+    const currentDaily = { ...daily };
+    currentDaily.moveIn = currentDaily.moveIn
+      ? currentDaily.moveIn.split(",")
+      : undefined;
+    const timeWindow = [];
+
+    if (currentDaily.effectTime) {
+      currentDaily.effectTime.split(",").forEach((time) => {
+        const timeArr = time.split("-");
+        timeWindow.push([
+          moment(timeArr[0], timeFotmat),
+          moment(timeArr[0], timeFotmat),
+        ]);
+      });
+    } else {
+      timeWindow.push([moment(), moment()]);
+    }
+    currentDaily.effectTime = timeWindow;
+    console.log(currentDaily);
+    setCurrentDaily(currentDaily);
+    form.setFieldsValue(currentDaily);
+  }, [daily]);
+  return (
+    <Modal
+      title={props.title}
+      visible={props.visible}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      forceRender
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item label={"Planned Time:"} name={"planTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Move In:"} name={"moveIn"}>
+          <Select mode="multiple">
+            {config.testerList.map((user) => {
+              return <Option key={user}>{user}</Option>;
+            })}
+          </Select>
+        </Form.Item>
+        <Form.List name={"effectTime"}>
+          {(fields, { add, remove }, { errors }) => (
+            <>
+              {fields.map((field, index) => (
+                <Form.Item
+                  label={index === 0 ? "Effictive Time:" : ""}
+                  required={false}
+                  key={field.key}
+                >
+                  <Form.Item
+                    {...field}
+                    validateTrigger={["onChange", "onBlur"]}
+                    noStyle
+                  >
+                    <TimePicker.RangePicker
+                      format={timeFotmat}
+                    ></TimePicker.RangePicker>
+                  </Form.Item>
+                  <PlusCircleOutlined
+                    onClick={() => add()}
+                    style={{ fontSize: 20, marginLeft: 5 }}
+                  />
+                  {fields.length > 1 ? (
+                    <MinusCircleOutlined
+                      onClick={() => remove(field.name)}
+                      style={{ fontSize: 20, marginLeft: 5 }}
+                    />
+                  ) : null}
+                </Form.Item>
+              ))}
+            </>
+          )}
+        </Form.List>
+        <Form.Item label={"Memo:"} name={"memo"}>
+          <TextArea></TextArea>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
 function getTypeTag(status) {
   switch (status) {
     case "LAUNCHED":
