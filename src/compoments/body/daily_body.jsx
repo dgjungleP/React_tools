@@ -222,9 +222,10 @@ function CurrentBody(props) {
   const handleChangeData = (data) => {
     const currentData = [...data];
     currentData.forEach((inner, index) => {
+      debugger;
       const pre = currentData[index - 1];
-      if (pre && pre.launchDay == inner.launchDay) {
-        inner.preindex = pre.preindex ? pre.preindex : index - 1;
+      if (pre && pre.launchDay == inner.launchDay && index % 10 !== 0) {
+        inner.preindex = pre.preindex > -1 ? pre.preindex : index - 1;
         inner.miss = true;
         currentData[inner.preindex].rowSpan += 1;
       } else {
@@ -505,6 +506,8 @@ function getTypeTag(status) {
       return <Tag color="error">Abandon</Tag>;
     case "HOLD_ON":
       return <Tag color="warning">Hold On</Tag>;
+    case "NONE":
+      return <Tag color="default">None</Tag>;
   }
 }
 export { DailyBody };
