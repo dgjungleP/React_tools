@@ -236,7 +236,6 @@ function CurrentBody(props) {
   const handleChangeData = (data) => {
     const currentData = [...data];
     currentData.forEach((inner, index) => {
-      debugger;
       const pre = currentData[index - 1];
       if (pre && pre.launchDay == inner.launchDay && index % 10 !== 0) {
         inner.preindex = pre.preindex > -1 ? pre.preindex : index - 1;
@@ -518,7 +517,6 @@ function OperateModal(props) {
 }
 function groupProject() {
   return (record, index) => {
-    debugger;
     const result = { width: 50 };
     if (record.miss) {
       result.rowSpan = 0;
