@@ -17,6 +17,8 @@ import {
   InputNumber,
   Select,
   Tooltip,
+  Switch,
+  message,
 } from "antd";
 import moment from "moment";
 import { getDailys, setDaliy } from "../../server/project-service";
@@ -36,6 +38,7 @@ function DailyBody(props) {
   });
   const [loading, updateLoading] = useState(false);
   const [timeWindow, setTimeWindow] = useState([]);
+  const [localZone, setLocalZone] = useState(false);
   const handleQuery = (query) => {
     setQuery(query);
   };
@@ -51,6 +54,9 @@ function DailyBody(props) {
       setTimeWindow(currentTimeWind);
     }
   };
+  const handleLocalZone = () => {
+    setLocalZone(!localZone);
+  };
   useEffect(() => {
     updateLoading(true);
     handleTimeWind();
@@ -58,11 +64,17 @@ function DailyBody(props) {
   }, [query]);
   return (
     <>
-      <Header query={query} chanegQuery={handleQuery}></Header>
+      <Header
+        query={query}
+        chanegQuery={handleQuery}
+        handleLocalZone={handleLocalZone}
+        localZone={localZone}
+      ></Header>
       <Spin spinning={loading}>
         <CurrentBody
           timeWindow={timeWindow}
           systemConfig={systemConfig}
+          localZone={localZone}
         ></CurrentBody>
       </Spin>
     </>
@@ -72,6 +84,7 @@ function CurrentBody(props) {
   const timeWindow = props.timeWindow;
   const systemConfig = props.systemConfig;
   const group = systemConfig.groupList;
+  const localZone = props.localZone;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisiable, setModalVisiable] = useState(false);
@@ -130,7 +143,8 @@ function CurrentBody(props) {
           {effectTime
             ? effectTime.split(",").map((time) => (
                 <div key={time}>
-                  {time} <br />
+                  {makeTime(localZone, time)}
+                  <br />
                 </div>
               ))
             : effectTime}
@@ -294,6 +308,7 @@ function CurrentBody(props) {
         changeVisiable={setModalVisiable}
         systemConfig={systemConfig}
         fresh={freshTableData}
+        localZone={localZone}
       ></OperateModal>
     </>
   );
@@ -352,6 +367,7 @@ function TimeList(props) {
 function Header(props) {
   const query = props.query;
   const [time, updateTime] = useState({ start: query.start, end: query.end });
+
   const onTimeChange = (_, dateString) => {
     const newTime = JSON.parse(JSON.stringify(time));
     newTime.start = dateString[0];
@@ -360,17 +376,24 @@ function Header(props) {
     let newQuery = JSON.parse(JSON.stringify(query));
     newQuery.start = dateString[0];
     newQuery.end = dateString[1];
-
     props.chanegQuery(newQuery);
   };
+
   return (
-    <Row gutter={15} justify="center" style={{ marginTop: 10 }} align="center">
+    <Row gutter={15} justify="center" style={{ marginTop: 10 }} align="middle">
       <Col>
-        <span>Time:</span>{" "}
+        <span style={{ marginRight: 5 }}>Time:</span>{" "}
         <RangePicker
           onChange={onTimeChange}
           defaultValue={[moment(query.start), moment(query.end)]}
         ></RangePicker>
+      </Col>
+      <Col>
+        <span style={{ marginRight: 5 }}>LocalZone:</span>
+        <Switch
+          checked={props.localZone}
+          onClick={props.handleLocalZone}
+        ></Switch>
       </Col>
     </Row>
   );
@@ -379,6 +402,7 @@ function Header(props) {
 function OperateModal(props) {
   const config = props.systemConfig;
   const changeVisiable = props.changeVisiable;
+  const localZone = props.localZone;
   const daily = props.data;
   const [currentDaily, setCurrentDaily] = useState({});
   const [form] = Form.useForm();
@@ -392,7 +416,11 @@ function OperateModal(props) {
     request.effectTime = (request.effectTime || [])
       .filter((data) => data)
       .map((data) => {
-        return data[0].format(timeFotmat) + "-" + data[1].format(timeFotmat);
+        return (
+          data[0].add(localZone ? 0 : 16).format(timeFotmat) +
+          "-" +
+          data[1].add(localZone ? 0 : 16).format(timeFotmat)
+        );
       })
       .join(",");
     setDaliy(request).then((response) => {
@@ -415,12 +443,15 @@ function OperateModal(props) {
       currentDaily.effectTime.split(",").forEach((time) => {
         const timeArr = time.split("-");
         timeWindow.push([
-          moment(timeArr[0], timeFotmat),
-          moment(timeArr[0], timeFotmat),
+          zoneTime(localZone, timeArr[0]),
+          zoneTime(localZone, timeArr[1]),
         ]);
       });
     } else {
-      timeWindow.push([moment(), moment()]);
+      timeWindow.push([
+        zoneTime(localZone, moment()),
+        zoneTime(localZone, moment()),
+      ]);
     }
     currentDaily.effectTime = timeWindow;
     setCurrentDaily(currentDaily);
@@ -497,7 +528,19 @@ function groupProject() {
     return result;
   };
 }
-
+function makeTime(localZone, time) {
+  const timeSplit = time.split("-");
+  return localZone
+    ? time
+    : zoneTime(localZone, timeSplit[0]).format(timeFotmat) +
+        "-" +
+        zoneTime(localZone, timeSplit[1]).format(timeFotmat);
+}
+function zoneTime(localZone, time) {
+  return localZone
+    ? moment(time, timeFotmat)
+    : moment(time, timeFotmat).add(-16, "h");
+}
 function getTypeTag(status) {
   switch (status) {
     case "LAUNCHED":
