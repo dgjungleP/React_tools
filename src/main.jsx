@@ -14,6 +14,7 @@ import {
   Route,
   Link,
   useLocation,
+  HashRouter,
 } from "react-router-dom";
 import { DailyTab, ShceduleTab } from "./compoments/schedule/schedule";
 import { SystemConfig } from "./compoments/config/config";

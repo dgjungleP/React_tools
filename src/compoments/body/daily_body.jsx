@@ -12,11 +12,11 @@ import {
   Spin,
   Table,
   Tag,
-  Button,
   Input,
   TimePicker,
   InputNumber,
   Select,
+  Tooltip,
 } from "antd";
 import moment from "moment";
 import { getDailys, setDaliy } from "../../server/project-service";
@@ -81,17 +81,21 @@ function CurrentBody(props) {
       title: "Launch Day",
       key: "launchDay",
       dataIndex: "launchDay",
+      width: 150,
+      onCell: groupProject(),
     },
     {
       title: "Project",
       key: "project",
       dataIndex: "project",
+      width: 100,
     },
     {
       title: "Status",
       key: "status",
       dataIndex: "status",
       editable: true,
+      width: 100,
       render: (status) => {
         return getTypeTag(status);
       },
@@ -100,21 +104,51 @@ function CurrentBody(props) {
       title: "Module",
       key: "module",
       dataIndex: "module",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (module) => (
+        <Tooltip placement="topLeft" title={module}>
+          {module}
+        </Tooltip>
+      ),
     },
     {
       title: "Planned Time",
       key: "planTime",
       dataIndex: "planTime",
+      width: 150,
     },
     {
       title: "Effective Time",
       key: "effectTime",
       dataIndex: "effectTime",
+      width: 150,
+
+      render: (effectTime) => (
+        <Tooltip placement="topLeft" title={effectTime}>
+          {effectTime
+            ? effectTime.split(",").map((time) => (
+                <div key={time}>
+                  {time} <br />
+                </div>
+              ))
+            : effectTime}
+        </Tooltip>
+      ),
     },
     {
       title: "BSD",
       key: "bsd",
       dataIndex: "bsd",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (bsd) => (
+        <Tooltip placement="topLeft" title={bsd}>
+          {bsd}
+        </Tooltip>
+      ),
     },
     {
       title: "Move In",
@@ -125,11 +159,20 @@ function CurrentBody(props) {
       title: "Memo",
       key: "memo",
       dataIndex: "memo",
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (memo) => (
+        <Tooltip placement="topLeft" title={memo}>
+          {memo}
+        </Tooltip>
+      ),
     },
     {
       title: "EM",
       key: "em",
       dataIndex: "em",
+      width: 100,
       render: (em, record) => {
         return (
           <Checkbox
@@ -176,6 +219,20 @@ function CurrentBody(props) {
       },
     };
   });
+  const handleChangeData = (data) => {
+    const currentData = [...data];
+    currentData.forEach((inner, index) => {
+      const pre = currentData[index - 1];
+      if (pre && pre.launchDay == inner.launchDay) {
+        inner.preindex = pre.preindex ? pre.preindex : index - 1;
+        inner.miss = true;
+        currentData[inner.preindex].rowSpan += 1;
+      } else {
+        inner.rowSpan = 1;
+      }
+    });
+    setData(currentData);
+  };
   const freshTableData = () => {
     setLoading(true);
     getDailys({ timeList: timeWindow, group })
@@ -184,7 +241,7 @@ function CurrentBody(props) {
           pj.key = pj.project;
           return pj;
         });
-        setData(data);
+        handleChangeData(data);
       })
       .finally(() => {
         setLoading(false);
@@ -194,12 +251,11 @@ function CurrentBody(props) {
     const newData = [...data];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
-    console.log(row);
     newData.splice(index, 1, { ...item, ...row });
     setLoading(true);
     setDaliy(row)
       .then((response) => {
-        setData(newData);
+        handleChangeData(newData);
         setLoading(false);
       })
       .finally(() => {});
@@ -366,7 +422,6 @@ function OperateModal(props) {
       timeWindow.push([moment(), moment()]);
     }
     currentDaily.effectTime = timeWindow;
-    console.log(currentDaily);
     setCurrentDaily(currentDaily);
     form.setFieldsValue(currentDaily);
   }, [daily]);
@@ -429,6 +484,19 @@ function OperateModal(props) {
     </Modal>
   );
 }
+function groupProject() {
+  return (record, index) => {
+    debugger;
+    const result = { width: 50 };
+    if (record.miss) {
+      result.rowSpan = 0;
+    } else {
+      result.rowSpan = record.rowSpan;
+    }
+    return result;
+  };
+}
+
 function getTypeTag(status) {
   switch (status) {
     case "LAUNCHED":

@@ -464,7 +464,7 @@ function makeFilter(selectors) {
 
 function groupUser() {
   return (record, index) => {
-    const result = { with: 200 };
+    const result = { width: 200 };
     if (record.miss) {
       result.rowSpan = 0;
     } else {
