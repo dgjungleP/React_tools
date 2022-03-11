@@ -108,7 +108,7 @@ function CurrentBody(props) {
       key: "status",
       dataIndex: "status",
       editable: true,
-      width: 100,
+      width: 150,
       render: (status) => {
         return getTypeTag(status);
       },
