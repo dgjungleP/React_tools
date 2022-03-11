@@ -447,15 +447,12 @@ function OperateModal(props) {
         ]);
       });
     } else {
-      timeWindow.push([
-        zoneTime(localZone, moment()),
-        zoneTime(localZone, moment()),
-      ]);
+      timeWindow.push([]);
     }
     currentDaily.effectTime = timeWindow;
     setCurrentDaily(currentDaily);
     form.setFieldsValue(currentDaily);
-  }, [daily]);
+  }, [daily, localZone]);
   return (
     <Modal
       title={props.title}
