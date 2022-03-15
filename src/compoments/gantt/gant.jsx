@@ -48,6 +48,7 @@ function Gantt(props) {
         data={props.tableData}
         updateData={props.updateData}
         selectors={props.selectors}
+        groups={props.groups}
       ></ReleaseTable>
       <DayOffTable
         year={year}
@@ -165,6 +166,15 @@ function ReleaseTable(props) {
       ),
   });
   const baseColumns = [
+    {
+      title: "Group",
+      key: "group",
+      dataIndex: "group",
+      editable: true,
+      filters: makeFilter(props.groups),
+      onFilter: (value, record) => record.group.indexOf(value) === 0,
+      filterSearch: true,
+    },
     {
       title: "Project",
       key: "Project",

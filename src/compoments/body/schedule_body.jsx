@@ -112,6 +112,7 @@ function ScheduleBody(props) {
           selectors={selectors}
           simple={simple}
           system={systemConfig}
+          groups={groups}
         ></Gantt>
       </Spin>
     </>
@@ -374,6 +375,7 @@ function makeData(json) {
     base.releaseDay = item.releaseDate;
     base.launchDay = item.launchDate;
     base.key = base.project + base.version;
+    base.group = item.group;
     result.push(base);
     count++;
   }
