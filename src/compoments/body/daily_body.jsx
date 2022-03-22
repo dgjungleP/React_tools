@@ -237,7 +237,11 @@ function CurrentBody(props) {
     const currentData = [...data];
     currentData.forEach((inner, index) => {
       const pre = currentData[index - 1];
-      if (pre && pre.launchDay == inner.launchDay && index % 10 !== 0) {
+      if (
+        pre &&
+        pre.launchDay == inner.launchDay
+        // && index % 10 !== 0
+      ) {
         inner.preindex = pre.preindex > -1 ? pre.preindex : index - 1;
         inner.miss = true;
         currentData[inner.preindex].rowSpan += 1;

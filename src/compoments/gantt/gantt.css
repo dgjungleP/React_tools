@@ -22,7 +22,7 @@
 }
 .overload-work{
     font-weight: bold;
-    background-color:tomato;
+    background-color:#f5c98e;
     border: 1px solid rgb(224, 224, 224)
 }
 .weekenday-class{
@@ -32,8 +32,10 @@
     background-color:   lightgoldenrodyellow !important;
 }
 .today-class{
-    background-color:   #ff7875  ;
+    background-color:   #EDEDED  ;
+    
 }
 .today-header-class{
-    background-color:   #ff7875  !important;
+    background-color:   #EDEDED  !important;
+    
 }
