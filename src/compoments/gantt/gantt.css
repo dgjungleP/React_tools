@@ -31,3 +31,9 @@
 .weekenday-header-class{
     background-color:   lightgoldenrodyellow !important;
 }
+.today-class{
+    background-color:   #ff7875  ;
+}
+.today-header-class{
+    background-color:   #ff7875  !important;
+}

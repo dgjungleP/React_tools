@@ -102,7 +102,7 @@ function GanttTable(props) {
   return (
     <>
       {" "}
-      <div style={{ width: "80%", margin: "20px auto 0" }}>
+      <div style={{ width: "95%", margin: "20px auto 0" }}>
         <Table
           className="no-point"
           dataSource={props.dataSource}
@@ -110,7 +110,7 @@ function GanttTable(props) {
           pagination={false}
           bordered
           size="small"
-          scroll={{ x: 1600 }}
+          scroll={{ x: 1800 }}
         ></Table>
       </div>
     </>
@@ -274,7 +274,7 @@ function ReleaseTable(props) {
 
   return (
     <>
-      <div style={{ width: "60%", margin: "15px auto 0" }}>
+      <div style={{ width: "99%", margin: "15px auto 0" }}>
         <Table
           components={components}
           title={() => "项目表"}
@@ -566,6 +566,9 @@ function colorCell(i, day, simple) {
     // if (checkWeekendDay(weekNumber, simple)) {
     //   className += " weekenday-class ";
     // }
+    if (moment().date() == i) {
+      className += " today-class";
+    }
     if (record.missCol.findIndex((data) => data === i) < 0) {
       if (record[i]) {
         const tail = record[i];
@@ -587,6 +590,9 @@ function colorHeaderCell(i, day, simple) {
     let className = "";
     if (checkWeekendDay(weekNumber, simple)) {
       className += " weekenday-header-class ";
+    }
+    if (moment().date() == i) {
+      className += " today-header-class";
     }
     result.className = className;
     return result;

@@ -290,6 +290,7 @@ function CurrentBody(props) {
         columns={columns}
         dataSource={data}
         loading={loading}
+        pagination={false}
       ></Table>
       <Row gutter={[16, 5]} style={{ marginTop: 100 }}>
         {timeWindow.map((time) => {
