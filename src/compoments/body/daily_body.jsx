@@ -413,7 +413,7 @@ function OperateModal(props) {
     };
     request.moveIn = (request.moveIn || []).join(",");
     request.effectTime = (request.effectTime || [])
-      .filter((data) => data)
+      .filter((data) => data && data.length > 1)
       .map((data) => {
         return (
           data[0].add(localZone ? 0 : 16).format(timeFotmat) +
