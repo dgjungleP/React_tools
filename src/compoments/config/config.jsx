@@ -13,6 +13,7 @@ import {
   Card,
   Popconfirm,
   Spin,
+  Switch,
 } from "antd";
 import {
   deleteSystemConfig,
@@ -26,10 +27,14 @@ function SystemConfigModal(props) {
   const [systemName, setSystemName] = useState();
   const [groupList, setGroupList] = useState();
   const [testerList, setTesterList] = useState();
+  const [dataLink, setDataLink] = useState();
+  const [hasHistory, setHasHistory] = useState();
   useEffect(() => {
     setSystemName(config.systemName);
     setGroupList(config.groupList);
     setTesterList(config.testerList);
+    setDataLink(config.dataLink);
+    setHasHistory(config.hasHistory);
   }, [config]);
   const handleOk = () => {
     if (!checklimit()) {
@@ -40,6 +45,8 @@ function SystemConfigModal(props) {
     config.testerList = testerList;
     config.groupList = groupList;
     config.systemName = systemName;
+    config.dataLink = dataLink;
+    config.hasHistory = hasHistory;
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
@@ -53,7 +60,9 @@ function SystemConfigModal(props) {
     setSystemName("");
     setGroupList([]);
     setTesterList([]);
-    setPreConfig({});
+    // setPreConfig({});
+    setDataLink("");
+    setHasHistory("");
     props.setSelectedSystem({});
   };
   const checklimit = () => {
@@ -73,6 +82,12 @@ function SystemConfigModal(props) {
   };
   const handleSystemChange = (event) => {
     setSystemName(event.target.value);
+  };
+  const handleDataLinkChange = (event) => {
+    setDataLink(event.target.value);
+  };
+  const onHasHistotyChange = () => {
+    setHasHistory(!hasHistory);
   };
 
   return (
@@ -112,6 +127,23 @@ function SystemConfigModal(props) {
             tokenSeparators={[","]}
             value={groupList}
           ></Select>
+        </Row>
+        <Row>
+          <span>DataLink:</span>
+          <Input
+            value={dataLink}
+            onPressEnter={handleDataLinkChange}
+            onChange={handleDataLinkChange}
+          ></Input>
+        </Row>
+        <Row align="middle">
+          <span>hasHistory:</span>
+          <Switch
+            style={{ marginLeft: 5 }}
+            checked={hasHistory}
+            onChange={onHasHistotyChange}
+            size="small"
+          />
         </Row>
       </Col>
     </Modal>
@@ -210,6 +242,21 @@ function SystemConfig(props) {
                           style={{ width: "100%" }}
                           disabled
                         ></Select>
+                      </Row>
+                      <Row>
+                        <span>Data Link:</span>
+                      </Row>
+                      <Row>
+                        <a> {config.dataLink}</a>
+                      </Row>
+                      <Row align="middle">
+                        <span>Has Histoty:</span>
+                        <Switch
+                          style={{ marginLeft: 5 }}
+                          checked={config.hasHistory}
+                          size="small"
+                          disabled
+                        />
                       </Row>
                     </Col>
                   </Card>

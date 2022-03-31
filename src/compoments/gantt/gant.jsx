@@ -49,6 +49,7 @@ function Gantt(props) {
         updateData={props.updateData}
         selectors={props.selectors}
         groups={props.groups}
+        systemConfig={props.system}
       ></ReleaseTable>
       <DayOffTable
         year={year}
@@ -118,6 +119,7 @@ function GanttTable(props) {
 }
 
 function ReleaseTable(props) {
+  const systemConfig = props.systemConfig;
   const [searchText, updateSearchText] = useState("");
   const [searchedColumn, updateSearchedColumn] = useState("");
 
@@ -266,6 +268,7 @@ function ReleaseTable(props) {
     setTester({
       projectId: row.project,
       tester: row.tester,
+      system: systemConfig.systemName,
     }).then((response) => {
       console.log(response);
     });

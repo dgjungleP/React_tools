@@ -2,10 +2,14 @@ import axios from "axios";
 import { func } from "prop-types";
 import { enviroment } from "../enviroments/enrivoment";
 const baseApi = enviroment.BASE_URL;
+// function getProject(request) {
+//   return axios.get(
+//     `${baseApi}projects?year=${request.year}&month=${request.month}&history=${request.history}&group=${request.group}`
+//   );
+// }
+
 function getProject(request) {
-  return axios.get(
-    `${baseApi}projects?year=${request.year}&month=${request.month}&history=${request.history}&group=${request.group}`
-  );
+  return axios.post(`${baseApi}projects`, request);
 }
 function setTester(request) {
   return axios.post(`${baseApi}set/tester`, request);
@@ -33,10 +37,13 @@ function deleteDayoff(requst) {
   return axios.delete(`${baseApi}day-off/${requst.id}`);
 }
 
+// function getDailys(request) {
+//   return axios.get(
+//     `${baseApi}dailys?timeList=${request.timeList}&group=${request.group}`
+//   );
+// }
 function getDailys(request) {
-  return axios.get(
-    `${baseApi}dailys?timeList=${request.timeList}&group=${request.group}`
-  );
+  return axios.post(`${baseApi}dailys`, request);
 }
 function setDaliy(request) {
   return axios.post(`${baseApi}set/daily`, request);

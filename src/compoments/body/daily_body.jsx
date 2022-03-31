@@ -253,7 +253,14 @@ function CurrentBody(props) {
   };
   const freshTableData = () => {
     setLoading(true);
-    getDailys({ timeList: timeWindow, group })
+    const query = {
+      timeList: timeWindow,
+      group,
+      queryLink: systemConfig.dataLink,
+      hasHistory: systemConfig.hasHistory,
+      system: systemConfig.systemName,
+    };
+    getDailys(query)
       .then((response) => {
         const data = response.data.map((pj) => {
           pj.key = pj.project;
@@ -271,6 +278,7 @@ function CurrentBody(props) {
     const item = newData[index];
     newData.splice(index, 1, { ...item, ...row });
     setLoading(true);
+    row.system = systemConfig.systemName;
     setDaliy(row)
       .then((response) => {
         handleChangeData(newData);
@@ -300,7 +308,11 @@ function CurrentBody(props) {
         {timeWindow.map((time) => {
           return (
             <Col span={3} key={time}>
-              <TimeList time={time} group={group}></TimeList>
+              <TimeList
+                time={time}
+                group={group}
+                systemConfig={systemConfig}
+              ></TimeList>
             </Col>
           );
         })}
@@ -318,6 +330,7 @@ function CurrentBody(props) {
   );
 }
 function TimeList(props) {
+  const systemConfig = props.systemConfig;
   const time = props.time;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -326,7 +339,14 @@ function TimeList(props) {
       return;
     }
     setLoading(true);
-    getDailys({ timeList: [time], group: [...props.group] })
+    const query = {
+      timeList: [time],
+      group: [...props.group],
+      queryLink: systemConfig.dataLink,
+      hasHistory: systemConfig.hasHistory,
+      system: systemConfig.systemName,
+    };
+    getDailys(query)
       .then((response) => {
         setData(response.data);
       })
@@ -427,6 +447,7 @@ function OperateModal(props) {
         );
       })
       .join(",");
+    request.system = config.systemName;
     setDaliy(request).then((response) => {
       console.log(response);
     });

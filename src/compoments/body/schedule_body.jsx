@@ -40,6 +40,9 @@ function ScheduleBody(props) {
     updateLoading(true);
     query = query ? query : {};
     if (check(query)) {
+      query.system = systemConfig.systemName;
+      query.queryLink = systemConfig.dataLink;
+      query.hasHistory = systemConfig.hasHistory;
       getProject(query)
         .then((response) => {
           setShowGant(true);
@@ -364,6 +367,7 @@ function makeLine(dataList, result, month, year) {
 function makeData(json) {
   const result = [];
   let count = 0;
+  debugger;
   for (const item of json) {
     const base = {};
     base.project = item.projectNumber;
