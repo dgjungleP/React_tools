@@ -25,6 +25,7 @@ import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
+import { useEffect } from "react/cjs/react.development";
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 function Gantt(props) {
@@ -102,7 +103,6 @@ function GanttTable(props) {
   }
   return (
     <>
-      {" "}
       <div style={{ width: "95%", margin: "20px auto 0" }}>
         <Table
           className="no-point"
@@ -187,6 +187,13 @@ function ReleaseTable(props) {
       title: "CRL/PB",
       key: "CRL/PB",
       dataIndex: "crl_pb",
+      render: (link) => {
+        return (
+          <a href={link} target="_blank">
+            Link
+          </a>
+        );
+      },
     },
     {
       title: "ProjectName",
@@ -258,7 +265,6 @@ function ReleaseTable(props) {
   const updateData = (newData) => {
     props.updateData(newData);
   };
-
   const handleSave = (row) => {
     row.tester = (row.tester || []).join(",");
     const newData = [...data];
