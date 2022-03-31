@@ -367,7 +367,6 @@ function makeLine(dataList, result, month, year) {
 function makeData(json) {
   const result = [];
   let count = 0;
-  debugger;
   for (const item of json) {
     const base = {};
     base.project = item.projectNumber;
@@ -378,7 +377,7 @@ function makeData(json) {
     base.tester = item.tester;
     base.releaseDay = item.releaseDate;
     base.launchDay = item.launchDate;
-    base.key = base.project + base.version;
+    base.key = base.project + base.version + base.tester;
     base.group = item.group;
     result.push(base);
     count++;

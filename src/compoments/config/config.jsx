@@ -247,7 +247,9 @@ function SystemConfig(props) {
                         <span>Data Link:</span>
                       </Row>
                       <Row>
-                        <a> {config.dataLink}</a>
+                        <a style={{ wordBreak: "break-all" }}>
+                          {config.dataLink}
+                        </a>
                       </Row>
                       <Row align="middle">
                         <span>Has Histoty:</span>
