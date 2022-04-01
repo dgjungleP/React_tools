@@ -258,19 +258,22 @@ function groupData(tableData, year, month, selectors) {
 function getTime(dataItem, month, year) {
   let start = getDateNumber(dataItem.releaseDay);
   let end = getDateNumber(dataItem.launchDay);
+  let overload = false;
   if (
     getMothNumber(dataItem.releaseDay) < parseInt(month) ||
     getYearNumber(dataItem.releaseDay) < parseInt(year)
   ) {
     start = 1;
+    overload = true;
   }
   if (
     getMothNumber(dataItem.launchDay) > parseInt(month) ||
     getYearNumber(dataItem.launchDay) > parseInt(year)
   ) {
     end = getDays(year, month) + 1;
+    overload = true;
   }
-  return { start, end };
+  return { start, end, overload };
 }
 
 function makeGanttTableData(tableDataGroup, month, year) {
@@ -324,7 +327,7 @@ function getMothNumber(time) {
 function makeLine(dataList, result, month, year) {
   dataList.forEach((data) => {
     const missCol = [];
-    const { start, end } = getTime(data, month, year);
+    const { start, end, overload } = getTime(data, month, year);
     for (let i = start + 1; i < end; i++) {
       missCol.push(i);
     }
@@ -337,7 +340,7 @@ function makeLine(dataList, result, month, year) {
       result[start] =
         data.project +
         "-Dayoff-" +
-        (end - start + 1) +
+        (end - start + (overload ? 0 : 1)) +
         "-&" +
         JSON.stringify(memo);
       if (start != end) {
