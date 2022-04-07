@@ -11,6 +11,7 @@ import {
   Popconfirm,
   message,
   Tooltip,
+  Collapse,
 } from "antd";
 import React, { useState } from "react";
 import "antd/dist/antd.css";
@@ -25,9 +26,9 @@ import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
-import { useEffect } from "react/cjs/react.development";
 const { RangePicker } = DatePicker;
 const { Option } = Select;
+const { Panel } = Collapse;
 function Gantt(props) {
   const year = props.query.year;
   const month = props.query.month;
@@ -188,14 +189,20 @@ function ReleaseTable(props) {
       key: "CRL/PB",
       dataIndex: "crl_pb",
       render: (link) => {
-        return link.split(";").map((singleLink) => (
-          <>
-            <a href={singleLink} target="_blank">
-              {singleLink}
-            </a>
-            <br />
-          </>
-        ));
+        return (
+          <Collapse ghost>
+            <Panel header="Link Collapse">
+              {link.split(";").map((singleLink) => (
+                <>
+                  <a href={singleLink} target="_blank">
+                    {singleLink}
+                  </a>
+                  <br />
+                </>
+              ))}
+            </Panel>
+          </Collapse>
+        );
       },
     },
     {
