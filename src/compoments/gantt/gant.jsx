@@ -188,11 +188,14 @@ function ReleaseTable(props) {
       key: "CRL/PB",
       dataIndex: "crl_pb",
       render: (link) => {
-        return (
-          <a href={link} target="_blank">
-            Link
-          </a>
-        );
+        return link.split(";").map((singleLink) => (
+          <>
+            <a href={singleLink} target="_blank">
+              {singleLink}
+            </a>
+            <br />
+          </>
+        ));
       },
     },
     {

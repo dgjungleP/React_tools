@@ -373,7 +373,7 @@ function makeData(json) {
   for (const item of json) {
     const base = {};
     base.project = item.projectNumber;
-    base.crl_pb = item.pb[0].link;
+    base.crl_pb = item.pb.map((data) => data.link).join(";");
     base.version = item.pb[0].versionId;
     base.status = item.status;
     base.projectName = item.pb[0].projectName;
