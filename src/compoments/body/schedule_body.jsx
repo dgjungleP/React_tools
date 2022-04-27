@@ -258,20 +258,22 @@ function groupData(tableData, year, month, selectors) {
 function getTime(dataItem, month, year) {
   let start = getDateNumber(dataItem.releaseDay);
   let end = getDateNumber(dataItem.launchDay);
+  let startMoth = getMothNumber(dataItem.releaseDay);
+  let startYear = getYearNumber(dataItem.releaseDay);
+  let endMoth = getMothNumber(dataItem.launchDay);
+  let endYear = getYearNumber(dataItem.launchDay);
+
   let overload = false;
-  if (
-    getMothNumber(dataItem.releaseDay) < parseInt(month) ||
-    getYearNumber(dataItem.releaseDay) < parseInt(year)
-  ) {
+  if (startMoth < parseInt(month) || startYear < parseInt(year)) {
     start = 1;
     overload = true;
   }
-  if (
-    getMothNumber(dataItem.launchDay) > parseInt(month) ||
-    getYearNumber(dataItem.launchDay) > parseInt(year)
-  ) {
+  if (endMoth > parseInt(month) || endYear > parseInt(year)) {
     end = getDays(year, month) + 1;
     overload = true;
+  }
+  if (endMoth == parseInt(month) && endYear == parseInt(year)) {
+    overload = false;
   }
   return { start, end, overload };
 }
@@ -331,9 +333,12 @@ function makeLine(dataList, result, month, year) {
     for (let i = start + 1; i < end; i++) {
       missCol.push(i);
     }
+
     const memo = {};
     memo.user = data.tester;
     if (data.type && data.type == "dayoff") {
+      debugger;
+
       memo.type = "休假";
       memo.startTime = data.releaseDay.split(" ")[0];
       memo.days = end - start + 1;

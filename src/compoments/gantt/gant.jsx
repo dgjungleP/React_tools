@@ -585,7 +585,7 @@ function colorCell(i, day, simple) {
     // if (checkWeekendDay(weekNumber, simple)) {
     //   className += " weekenday-class ";
     // }
-    if (moment().date() == i) {
+    if (moment().date() == i && moment().month() == day.month()) {
       className += " today-class";
     }
     if (record.missCol.findIndex((data) => data === i) < 0) {
