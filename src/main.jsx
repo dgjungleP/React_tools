@@ -7,6 +7,7 @@ import {
   PieChartOutlined,
   SettingOutlined,
   CalendarOutlined,
+  SmileOutlined,
 } from "@ant-design/icons";
 import {
   BrowserRouter,
@@ -18,6 +19,7 @@ import {
 } from "react-router-dom";
 import { DailyTab, ShceduleTab } from "./compoments/schedule/schedule";
 import { SystemConfig } from "./compoments/config/config";
+import { HolidayConfig } from "./compoments/config/holiday";
 const { Sider } = Layout;
 function MyMenus(props) {
   const location = useLocation();
@@ -33,6 +35,9 @@ function MyMenus(props) {
         </Menu.Item>
         <Menu.Item key="system" icon={<SettingOutlined />}>
           <Link to="/system">System Config</Link>
+        </Menu.Item>
+        <Menu.Item key="holiday" icon={<SmileOutlined />}>
+          <Link to="/holiday">Holiday Config</Link>
         </Menu.Item>
       </Menu>
     </>
@@ -67,6 +72,10 @@ ReactDOM.render(
             <Route
               path="/system"
               element={<SystemConfig></SystemConfig>}
+            ></Route>
+            <Route
+              path="/holiday"
+              element={<HolidayConfig></HolidayConfig>}
             ></Route>
           </Routes>
         </Layout>

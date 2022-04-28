@@ -45,6 +45,18 @@ function deleteDayoff(requst) {
 function getDailys(request) {
   return axios.post(`${baseApi}dailys`, request);
 }
+function getHoliday(request) {
+  return axios.get(`${baseApi}holiday`);
+}
+function getUserInfo(request) {
+  return axios.get(`${baseApi}user-info?systemId=${request}`);
+}
+function updateHoliday(request) {
+  return axios.post(`${baseApi}holiday`, request);
+}
+function updateUserInfo(request) {
+  return axios.post(`${baseApi}user-info`, request);
+}
 function setDaliy(request) {
   return axios.post(`${baseApi}set/daily`, request);
 }
@@ -59,4 +71,8 @@ export {
   getDayoff,
   getDailys,
   setDaliy,
+  getUserInfo,
+  getHoliday,
+  updateHoliday,
+  updateUserInfo,
 };
