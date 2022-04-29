@@ -54,6 +54,9 @@ function getUserInfo(request) {
 function updateHoliday(request) {
   return axios.post(`${baseApi}holiday`, request);
 }
+function deleteHoliday(request) {
+  return axios.delete(`${baseApi}holiday?id=${request}`);
+}
 function updateUserInfo(request) {
   return axios.post(`${baseApi}user-info`, request);
 }
@@ -75,4 +78,5 @@ export {
   getHoliday,
   updateHoliday,
   updateUserInfo,
+  deleteHoliday,
 };

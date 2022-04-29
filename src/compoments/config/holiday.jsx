@@ -8,10 +8,10 @@ import {
   getUserInfo,
   updateHoliday,
   updateUserInfo,
+  deleteHoliday,
 } from "../../server/project-service";
 import {
   Button,
-  Card,
   Col,
   DatePicker,
   Descriptions,
@@ -157,6 +157,12 @@ function Holiday(props) {
     setCurrentHoliday(holiday);
     setModalShow(true);
   };
+  const handleDeleteHoliday = (holiday) => {
+    setLoading(true);
+    deleteHoliday(holiday.id).then((res) => {
+      freshData();
+    });
+  };
   const handleOk = () => {
     setModalShow(false);
     console.log(currentHoliday);
@@ -198,6 +204,13 @@ function Holiday(props) {
                 actions={[
                   <a key="list-loadmore-edit" onClick={() => editHoliday(item)}>
                     edit
+                  </a>,
+                  <a
+                    key="list-loadmore-edit"
+                    onClick={() => handleDeleteHoliday(item)}
+                    style={{ color: "red" }}
+                  >
+                    delete
                   </a>,
                 ]}
               >
