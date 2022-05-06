@@ -45,6 +45,8 @@ function ScheduleBody(props) {
       query.hasHistory = systemConfig.hasHistory;
       getProject(query)
         .then((response) => {
+          debugger;
+
           setShowGant(true);
           flushDate(response.data, query);
         })
@@ -58,6 +60,8 @@ function ScheduleBody(props) {
     }
   };
   const chanDage = (newTableData, currentQuery) => {
+    debugger;
+
     currentQuery = currentQuery ? currentQuery : query;
     updateLoading(true);
     getDayoff(currentQuery).then((response) => {
@@ -375,21 +379,31 @@ function makeLine(dataList, result, month, year) {
 function makeData(json) {
   const result = [];
   let count = 0;
-  for (const item of json) {
-    const base = {};
-    base.project = item.projectNumber;
-    base.crl_pb = item.pb.map((data) => data.link).join(";");
-    base.version = item.pb[0].versionId;
-    base.status = item.status;
-    base.projectName = item.pb[0].projectName;
-    base.tester = item.tester;
-    base.releaseDay = item.releaseDate;
-    base.launchDay = item.launchDate;
-    base.key = base.project + base.version + base.tester;
-    base.group = item.group;
-    result.push(base);
-    count++;
+  try {
+    for (const item of json) {
+      const base = {};
+      base.project = item.projectNumber;
+      base.crl_pb = item.pb.map((data) => data.link).join(";");
+      base.version = item.pb.map((data) => data.versionId);
+      base.status = item.status;
+      base.projectName = item.pb[0].projectName;
+      base.tester = item.tester;
+      base.releaseDay = item.releaseDate;
+      base.launchDay = item.launchDate;
+      base.key =
+        base.project +
+        base.version +
+        base.launchDay +
+        base.projectName +
+        base.tester;
+      base.group = item.group;
+      result.push(base);
+      count++;
+    }
+  } catch (e) {
+    console.log(e);
   }
+  debugger;
   return result;
 }
 

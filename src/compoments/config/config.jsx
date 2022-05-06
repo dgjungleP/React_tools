@@ -29,12 +29,15 @@ function SystemConfigModal(props) {
   const [testerList, setTesterList] = useState();
   const [dataLink, setDataLink] = useState();
   const [hasHistory, setHasHistory] = useState();
+  const [needGroup, setNeedGroup] = useState();
+
   useEffect(() => {
     setSystemName(config.systemName);
     setGroupList(config.groupList);
     setTesterList(config.testerList);
     setDataLink(config.dataLink);
     setHasHistory(config.hasHistory);
+    setNeedGroup(config.needGroup);
   }, [config]);
   const handleOk = () => {
     if (!checklimit()) {
@@ -47,6 +50,7 @@ function SystemConfigModal(props) {
     config.systemName = systemName;
     config.dataLink = dataLink;
     config.hasHistory = hasHistory;
+    config.needGroup = needGroup;
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
@@ -63,6 +67,7 @@ function SystemConfigModal(props) {
     // setPreConfig({});
     setDataLink("");
     setHasHistory("");
+    setNeedGroup("");
     props.setSelectedSystem({});
   };
   const checklimit = () => {
@@ -88,6 +93,10 @@ function SystemConfigModal(props) {
   };
   const onHasHistotyChange = () => {
     setHasHistory(!hasHistory);
+  };
+
+  const onNeedGroupChange = () => {
+    setNeedGroup(!needGroup);
   };
 
   return (
@@ -137,11 +146,20 @@ function SystemConfigModal(props) {
           ></Input>
         </Row>
         <Row align="middle">
-          <span>hasHistory:</span>
+          <span>HasHistory:</span>
           <Switch
             style={{ marginLeft: 5 }}
             checked={hasHistory}
             onChange={onHasHistotyChange}
+            size="small"
+          />
+        </Row>
+        <Row align="middle">
+          <span>NeedGroup:</span>
+          <Switch
+            style={{ marginLeft: 5 }}
+            checked={needGroup}
+            onChange={onNeedGroupChange}
             size="small"
           />
         </Row>
@@ -256,6 +274,15 @@ function SystemConfig(props) {
                         <Switch
                           style={{ marginLeft: 5 }}
                           checked={config.hasHistory}
+                          size="small"
+                          disabled
+                        />
+                      </Row>
+                      <Row align="middle">
+                        <span>Need Group:</span>
+                        <Switch
+                          style={{ marginLeft: 5 }}
+                          checked={config.needGroup}
                           size="small"
                           disabled
                         />
