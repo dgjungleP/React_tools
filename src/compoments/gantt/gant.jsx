@@ -69,6 +69,11 @@ function GanttTable(props) {
   const year = props.year;
   const month = props.month;
   const simple = !props.simple;
+  const sourceData = [
+    ...props.dataSource.filter((data) => (data.name || "").includes("*")),
+    ...props.dataSource.filter((data) => !(data.name || "").includes("*")),
+  ];
+
   const columns = [
     {
       title: "name",
@@ -107,7 +112,7 @@ function GanttTable(props) {
       <div style={{ width: "95%", margin: "20px auto 0" }}>
         <Table
           className="no-point"
-          dataSource={props.dataSource}
+          dataSource={sourceData}
           columns={columns}
           pagination={false}
           bordered
@@ -168,21 +173,44 @@ function ReleaseTable(props) {
         text
       ),
   });
+
+  const data = props.data;
+  const statusSelectors = Array.from(
+    new Set(data.map((inner) => inner.status))
+  );
+  const firstCol = {
+    title: !systemConfig.needDivision ? "Group" : "Division",
+    key: !systemConfig.needDivision ? "group" : "division",
+    dataIndex: !systemConfig.needDivision ? "group" : "division",
+    editable: true,
+    filters: makeFilter(
+      (systemConfig.needDivision
+        ? systemConfig.divisionList
+        : systemConfig.groupList) || []
+    ),
+    onFilter: (value, record) =>
+      record[!systemConfig.needDivision ? "group" : "division"].indexOf(
+        value
+      ) === 0,
+    filterSearch: true,
+  };
   const baseColumns = [
-    {
-      title: "Group",
-      key: "group",
-      dataIndex: "group",
-      editable: true,
-      filters: makeFilter(props.groups),
-      onFilter: (value, record) => record.group.indexOf(value) === 0,
-      filterSearch: true,
-    },
+    firstCol,
     {
       title: "Project",
       key: "Project",
       dataIndex: "project",
       ...getColumnSearchProps("project"),
+    },
+    {
+      title: "Status",
+      key: "Status",
+      dataIndex: "status",
+      editable: true,
+
+      filters: makeFilter(statusSelectors),
+      onFilter: (value, record) => record.status.indexOf(value) === 0,
+      filterSearch: true,
     },
     {
       title: "CRL/PB",
@@ -271,7 +299,7 @@ function ReleaseTable(props) {
       },
     };
   });
-  const data = props.data;
+
   const updateData = (newData) => {
     props.updateData(newData);
   };
@@ -290,7 +318,6 @@ function ReleaseTable(props) {
     });
     updateData(newData);
   };
-
   return (
     <>
       <div style={{ width: "99%", margin: "15px auto 0" }}>
@@ -508,6 +535,9 @@ function groupUser() {
     } else {
       className = "overload-work";
     }
+    if ((record.name || "").includes("*")) {
+      className = " pending-class";
+    }
     result.className = className;
     return result;
   };
@@ -573,7 +603,7 @@ function formatter(i) {
 
 function formatName(i) {
   return (text, record, index) => {
-    return record.name;
+    return record.name.replace(new RegExp("\\*", "gm"), "");
   };
 }
 

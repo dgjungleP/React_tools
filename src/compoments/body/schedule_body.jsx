@@ -45,8 +45,6 @@ function ScheduleBody(props) {
       query.hasHistory = systemConfig.hasHistory;
       getProject(query)
         .then((response) => {
-          debugger;
-
           setShowGant(true);
           flushDate(response.data, query);
         })
@@ -60,8 +58,6 @@ function ScheduleBody(props) {
     }
   };
   const chanDage = (newTableData, currentQuery) => {
-    debugger;
-
     currentQuery = currentQuery ? currentQuery : query;
     updateLoading(true);
     getDayoff(currentQuery).then((response) => {
@@ -341,8 +337,6 @@ function makeLine(dataList, result, month, year) {
     const memo = {};
     memo.user = data.tester;
     if (data.type && data.type == "dayoff") {
-      debugger;
-
       memo.type = "休假";
       memo.startTime = data.releaseDay.split(" ")[0];
       memo.days = end - start + 1;
@@ -397,13 +391,13 @@ function makeData(json) {
         base.projectName +
         base.tester;
       base.group = item.group;
+      base.division = item.division;
       result.push(base);
       count++;
     }
   } catch (e) {
     console.log(e);
   }
-  debugger;
   return result;
 }
 

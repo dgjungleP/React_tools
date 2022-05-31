@@ -26,19 +26,28 @@ function SystemConfigModal(props) {
   const config = props.config;
   const [systemName, setSystemName] = useState();
   const [groupList, setGroupList] = useState();
+  const [divisionList, setDivisionList] = useState();
+
   const [testerList, setTesterList] = useState();
   const [dataLink, setDataLink] = useState();
   const [hasHistory, setHasHistory] = useState();
   const [needGroup, setNeedGroup] = useState();
 
+  const [needDivision, setNeedDivision] = useState();
+
   useEffect(() => {
+    updateConfig(config);
+  }, [config]);
+  const updateConfig = (config) => {
     setSystemName(config.systemName);
     setGroupList(config.groupList);
     setTesterList(config.testerList);
     setDataLink(config.dataLink);
     setHasHistory(config.hasHistory);
     setNeedGroup(config.needGroup);
-  }, [config]);
+    setDivisionList(config.divisionList);
+    setNeedDivision(config.needDivision);
+  };
   const handleOk = () => {
     if (!checklimit()) {
       cleanStatus();
@@ -51,6 +60,8 @@ function SystemConfigModal(props) {
     config.dataLink = dataLink;
     config.hasHistory = hasHistory;
     config.needGroup = needGroup;
+    config.divisionList = divisionList;
+    config.needDivision = needDivision;
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
@@ -61,13 +72,14 @@ function SystemConfigModal(props) {
     cleanStatus();
   };
   const cleanStatus = () => {
-    setSystemName("");
-    setGroupList([]);
-    setTesterList([]);
-    // setPreConfig({});
-    setDataLink("");
-    setHasHistory("");
-    setNeedGroup("");
+    // setSystemName("");
+    // setGroupList([]);
+    // setTesterList([]);
+    // // setPreConfig({});
+    // setDataLink("");
+    // setHasHistory("");
+    // setNeedGroup("");
+    updateConfig({});
     props.setSelectedSystem({});
   };
   const checklimit = () => {
@@ -97,6 +109,9 @@ function SystemConfigModal(props) {
 
   const onNeedGroupChange = () => {
     setNeedGroup(!needGroup);
+  };
+  const onNeedDivisionChange = () => {
+    setNeedDivision(!needDivision);
   };
 
   return (
@@ -138,6 +153,16 @@ function SystemConfigModal(props) {
           ></Select>
         </Row>
         <Row>
+          <span>DivisionList:</span>
+          <Select
+            mode="tags"
+            style={{ width: "100%" }}
+            onChange={(value) => setDivisionList(value)}
+            tokenSeparators={[","]}
+            value={divisionList}
+          ></Select>
+        </Row>
+        <Row>
           <span>DataLink:</span>
           <Input
             value={dataLink}
@@ -160,6 +185,15 @@ function SystemConfigModal(props) {
             style={{ marginLeft: 5 }}
             checked={needGroup}
             onChange={onNeedGroupChange}
+            size="small"
+          />
+        </Row>
+        <Row align="middle">
+          <span>NeedDivision:</span>
+          <Switch
+            style={{ marginLeft: 5 }}
+            checked={needDivision}
+            onChange={onNeedDivisionChange}
             size="small"
           />
         </Row>
@@ -251,6 +285,17 @@ function SystemConfig(props) {
                         ></Select>
                       </Row>
                       <Row>
+                        <span>Division List:</span>
+                      </Row>
+                      <Row>
+                        <Select
+                          mode="multiple"
+                          defaultValue={config.divisionList}
+                          disabled
+                          style={{ width: "100%" }}
+                        ></Select>
+                      </Row>
+                      <Row>
                         <span>Tester List:</span>
                       </Row>
                       <Row>
@@ -283,6 +328,15 @@ function SystemConfig(props) {
                         <Switch
                           style={{ marginLeft: 5 }}
                           checked={config.needGroup}
+                          size="small"
+                          disabled
+                        />
+                      </Row>
+                      <Row align="middle">
+                        <span>Need Division:</span>
+                        <Switch
+                          style={{ marginLeft: 5 }}
+                          checked={config.needDivision}
                           size="small"
                           disabled
                         />
