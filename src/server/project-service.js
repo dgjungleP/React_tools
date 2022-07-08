@@ -1,12 +1,18 @@
 import axios from "axios";
-import { func } from "prop-types";
 import { enviroment } from "../enviroments/enrivoment";
 const baseApi = enviroment.BASE_URL;
-// function getProject(request) {
-//   return axios.get(
-//     `${baseApi}projects?year=${request.year}&month=${request.month}&history=${request.history}&group=${request.group}`
-//   );
-// }
+
+function updateOtherJob(request) {
+  return axios.post(`${baseApi}other-job`, request);
+}
+function getOtherJob(request) {
+  return axios.get(
+    `${baseApi}other-job?year=${request.year}&month=${request.month}&history=${request.history}&system=${request.system}`
+  );
+}
+function deleteOtherJob(requst) {
+  return axios.delete(`${baseApi}other-job/${requst.id}`);
+}
 
 function getProject(request) {
   return axios.post(`${baseApi}projects`, request);
@@ -37,11 +43,6 @@ function deleteDayoff(requst) {
   return axios.delete(`${baseApi}day-off/${requst.id}`);
 }
 
-// function getDailys(request) {
-//   return axios.get(
-//     `${baseApi}dailys?timeList=${request.timeList}&group=${request.group}`
-//   );
-// }
 function getDailys(request) {
   return axios.post(`${baseApi}dailys`, request);
 }
@@ -79,4 +80,7 @@ export {
   updateHoliday,
   updateUserInfo,
   deleteHoliday,
+  updateOtherJob,
+  deleteOtherJob,
+  getOtherJob,
 };

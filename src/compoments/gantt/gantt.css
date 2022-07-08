@@ -1,4 +1,8 @@
-.release-class{
+.release-class {
+    background-color:powderblue !important;
+    font-weight: bold;
+}
+.jobtime-class{
     background-color:powderblue !important;
     font-weight: bold;
 }

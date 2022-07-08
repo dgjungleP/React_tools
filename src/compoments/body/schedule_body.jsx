@@ -1,12 +1,31 @@
-import React, { useState, useEffect, useContext } from "react";
-import { DatePicker, Switch, Select, Row, Col, Spin } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  DatePicker,
+  Switch,
+  Select,
+  Row,
+  Col,
+  Spin,
+  Button,
+  Modal,
+  Input,
+  message,
+  Divider,
+} from "antd";
 import "antd/dist/antd.css";
 import "./schedule_body.css";
 import { Gantt } from "../gantt/gant";
-import { getDayoff, getProject } from "../../server/project-service";
+import {
+  getDayoff,
+  getProject,
+  getOtherJob,
+  updateDayoff,
+  updateOtherJob,
+} from "../../server/project-service";
 import moment from "moment";
 const { Option } = Select;
 const yearMonthFormatt = "yyyy-MM";
+const { RangePicker } = DatePicker;
 function ScheduleBody(props) {
   const date = new Date();
   const systemConfig = props.systemConfig;
@@ -26,6 +45,8 @@ function ScheduleBody(props) {
   const [loading, updateLoading] = useState(false);
   const [simple, updateSimple] = useState(false);
   const [dayoffTable, updateDayoffTable] = useState([]);
+  const [otherJobTable, updateOtherJobTable] = useState([]);
+
   const chanegQuery = (parmas) => {
     const newQuery = JSON.parse(JSON.stringify(query));
     Object.assign(newQuery, parmas);
@@ -60,34 +81,54 @@ function ScheduleBody(props) {
   const chanDage = (newTableData, currentQuery) => {
     currentQuery = currentQuery ? currentQuery : query;
     updateLoading(true);
-    getDayoff(currentQuery).then((response) => {
-      let newDayoffTableData = response.data;
-      newDayoffTableData = newDayoffTableData.map((dayoff, index) => {
-        dayoff.key = dayoff.id;
-        dayoff.index = index + 1;
-        dayoff.name = dayoff.tester;
-        dayoff.releaseDay = dayoff.startTime;
-        dayoff.launchDay = dayoff.endTime;
-        dayoff.type = "dayoff";
-        dayoff.project = "休";
-        return dayoff;
-      });
-      const tableDataMerge = [...newTableData, ...newDayoffTableData];
-      updateDayoffTable(newDayoffTableData);
-      const newGanttData = makeGanttTableData(
-        groupData(
-          tableDataMerge,
-          currentQuery.year,
+    Promise.all([getDayoff(currentQuery), getOtherJob(currentQuery)]).then(
+      ([newDayoffTableData, newOtherJobTableData]) => {
+        newDayoffTableData = newDayoffTableData.data.map((dayoff, index) => {
+          dayoff.key = dayoff.id;
+          dayoff.index = index + 1;
+          dayoff.name = dayoff.tester;
+          dayoff.releaseDay = dayoff.startTime;
+          dayoff.launchDay = dayoff.endTime;
+          dayoff.type = "dayoff";
+          dayoff.project = "休";
+          return dayoff;
+        });
+        newOtherJobTableData = newOtherJobTableData.data.map(
+          (otherJob, index) => {
+            otherJob.key = otherJob.id;
+            otherJob.index = index + 1;
+            otherJob.name = otherJob.user;
+            otherJob.tester = otherJob.user;
+            otherJob.releaseDay = otherJob.startTime;
+            otherJob.launchDay = otherJob.endTime;
+            otherJob.type = "otherJob";
+            otherJob.project = otherJob.jobName;
+            return otherJob;
+          }
+        );
+        updateDayoffTable(newDayoffTableData);
+        updateOtherJobTable(newOtherJobTableData);
+
+        const tableDataMerge = [
+          ...newTableData,
+          ...newDayoffTableData,
+          ...newOtherJobTableData,
+        ];
+        const newGanttData = makeGanttTableData(
+          groupData(
+            tableDataMerge,
+            currentQuery.year,
+            currentQuery.month,
+            selectors
+          ),
           currentQuery.month,
-          selectors
-        ),
-        currentQuery.month,
-        currentQuery.year
-      );
-      updateganttTableData(newGanttData);
-      updateTableData(newTableData);
-      updateLoading(false);
-    });
+          currentQuery.year
+        );
+        updateganttTableData(newGanttData);
+        updateTableData(newTableData);
+        updateLoading(false);
+      }
+    );
   };
   const flushDate = (responseData, query) => {
     const newTableData = makeData(responseData);
@@ -103,6 +144,9 @@ function ScheduleBody(props) {
         query={query}
         onSimpleChange={updateSimple}
         groups={groups}
+        system={systemConfig}
+        tableData={tableData}
+        updateData={chanDage}
       ></Header>
       <Spin spinning={loading}>
         <Gantt
@@ -111,6 +155,7 @@ function ScheduleBody(props) {
           tableData={tableData}
           ganttTableData={ganttTableData}
           dayoffData={dayoffTable}
+          otherJobTable={otherJobTable}
           updateData={chanDage}
           selectors={selectors}
           simple={simple}
@@ -143,6 +188,10 @@ function Header(props) {
   const onGroupChange = (value) => {
     updateGroup(value);
     props.onQueryChange({ group: value });
+  };
+
+  const freshData = () => {
+    props.updateData(props.tableData);
   };
   return (
     <>
@@ -185,6 +234,243 @@ function Header(props) {
           <Switch checked={simple} onChange={onHistoryChange} />
         </Col>
       </Row>
+      <Divider>Operations</Divider>
+      <Row gutter={15} justify="left" style={{ marginLeft: 40 }} align="start">
+        <Col>
+          <DayOffRequestClick
+            freshData={freshData}
+            system={props.system}
+          ></DayOffRequestClick>
+        </Col>
+        <Col>
+          <OtherJobClick
+            freshData={freshData}
+            system={props.system}
+          ></OtherJobClick>
+        </Col>
+      </Row>
+      <Divider></Divider>
+    </>
+  );
+}
+
+function OtherJobClick(props) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <>
+      <Button type="primary" onClick={() => setVisible(true)}>
+        Request Other Job
+      </Button>
+
+      <OtherJobRequest
+        visible={visible}
+        changeVisible={setVisible}
+        freshData={props.freshData}
+        system={props.system}
+      ></OtherJobRequest>
+    </>
+  );
+}
+
+function OtherJobRequest(props) {
+  const systemConfig = props.system;
+  const [user, setUser] = useState();
+  const [time, setTime] = useState();
+  const [jobName, setJobName] = useState();
+  const [system, setSystem] = useState(systemConfig.systemName);
+
+  const checkValid = () => {
+    if (!user) {
+      message.warning("Please select user");
+      return true;
+    }
+    if (!time) {
+      message.warning("Please select time");
+      return true;
+    }
+    return false;
+  };
+  const handleSumbit = () => {
+    if (checkValid()) {
+      return;
+    }
+    const request = { user: user, systemName: system, jobName: jobName };
+    request.startTime = time[0].format("YYYY-MM-DD");
+    request.endTime = time[1].format("YYYY-MM-DD");
+    request.days = time[1].diff(time[0], "days") + 1;
+    updateOtherJob([request]).then((response) => {
+      props.changeVisible(false);
+      message.success("Create Other Job success!");
+      setTimeout(() => {
+        props.freshData();
+        cleanStatus();
+      }, 200);
+    });
+  };
+  const handleCancel = () => {
+    props.changeVisible(false);
+    cleanStatus();
+  };
+  const cleanStatus = () => {
+    setTime();
+    setUser();
+    setJobName();
+  };
+  return (
+    <>
+      <Modal
+        title="Request Other Job"
+        centered
+        visible={props.visible}
+        onOk={handleSumbit}
+        onCancel={handleCancel}
+        width={500}
+      >
+        <Col>
+          <Row>
+            <span>User:</span>
+            <Select
+              style={{ width: "100%" }}
+              value={user}
+              onChange={(value) => setUser(value)}
+            >
+              {systemConfig.testerList.map((tester) => {
+                return (
+                  <Option value={tester} key={tester}>
+                    {tester}
+                  </Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row>
+            <span>Job Name:</span>
+            <Input
+              style={{ width: "100%" }}
+              value={jobName}
+              onChange={(value) => {
+                setJobName(value.target.value);
+              }}
+            ></Input>
+          </Row>
+          <Row>
+            <span>Time:</span>
+            <RangePicker
+              style={{ width: "100%" }}
+              value={time}
+              onChange={(value) => setTime(value)}
+            ></RangePicker>
+          </Row>
+          <Row>
+            <span>System:</span>
+            <Input style={{ width: "100%" }} value={system} disabled></Input>
+          </Row>
+        </Col>
+      </Modal>
+    </>
+  );
+}
+
+function DayOffRequestClick(props) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <>
+      <Button type="primary" onClick={() => setVisible(true)}>
+        Request Dayoff
+      </Button>
+
+      <DayOffRequest
+        visible={visible}
+        changeVisible={setVisible}
+        freshData={props.freshData}
+        system={props.system}
+      ></DayOffRequest>
+    </>
+  );
+}
+function DayOffRequest(props) {
+  const systemConfig = props.system;
+  const [user, setUser] = useState();
+  const [time, setTime] = useState();
+  const [system, setSystem] = useState(systemConfig.systemName);
+
+  const checkValid = () => {
+    if (!user) {
+      message.warning("Please select user");
+      return true;
+    }
+    if (!time) {
+      message.warning("Please select time");
+      return true;
+    }
+    return false;
+  };
+  const handleSumbit = () => {
+    if (checkValid()) {
+      return;
+    }
+    const request = { tester: user, systemName: system };
+    request.startTime = time[0].format("YYYY-MM-DD");
+    request.endTime = time[1].format("YYYY-MM-DD");
+    request.days = time[1].diff(time[0], "days") + 1;
+    updateDayoff([request]).then((response) => {
+      props.changeVisible(false);
+      message.success("Create Day off success!");
+      setTimeout(() => {
+        props.freshData();
+        cleanStatus();
+      }, 200);
+    });
+  };
+  const handleCancel = () => {
+    props.changeVisible(false);
+    cleanStatus();
+  };
+  const cleanStatus = () => {
+    setTime();
+    setUser();
+  };
+  return (
+    <>
+      <Modal
+        title="Request Dayoff"
+        centered
+        visible={props.visible}
+        onOk={handleSumbit}
+        onCancel={handleCancel}
+        width={500}
+      >
+        <Col>
+          <Row>
+            <span>User:</span>
+            <Select
+              style={{ width: "100%" }}
+              value={user}
+              onChange={(value) => setUser(value)}
+            >
+              {systemConfig.testerList.map((tester) => {
+                return (
+                  <Option value={tester} key={tester}>
+                    {tester}
+                  </Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row>
+            <span>Time:</span>
+            <RangePicker
+              style={{ width: "100%" }}
+              value={time}
+              onChange={(value) => setTime(value)}
+            ></RangePicker>
+          </Row>
+          <Row>
+            <span>System:</span>
+            <Input style={{ width: "100%" }} value={system} disabled></Input>
+          </Row>
+        </Col>
+      </Modal>
     </>
   );
 }
@@ -336,6 +622,7 @@ function makeLine(dataList, result, month, year) {
 
     const memo = {};
     memo.user = data.tester;
+    memo.key = data.type;
     if (data.type && data.type == "dayoff") {
       memo.type = "休假";
       memo.startTime = data.releaseDay.split(" ")[0];
@@ -349,12 +636,26 @@ function makeLine(dataList, result, month, year) {
       if (start != end) {
         missCol.push(end);
       }
-      // result[end] = data.project + "-Dayoff-1";
+    } else if (data.type == "otherJob") {
+      memo.type = "其他";
+      memo.startTime = data.releaseDay.split(" ")[0];
+      memo.endTime = data.launchDay.split(" ")[0];
+      memo.jobName = data.jobName;
+      result[start] =
+        data.project +
+        "-JobTime-" +
+        (end - start + (overload ? 0 : 1)) +
+        "-&" +
+        JSON.stringify(memo);
+      if (start != end) {
+        missCol.push(end);
+      }
     } else {
       memo.type = "项目";
       memo.project = data.project;
       memo.startTime = data.releaseDay;
       memo.endTime = data.launchDay;
+
       result[start] =
         data.project +
         "-Release-" +

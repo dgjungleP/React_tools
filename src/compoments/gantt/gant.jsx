@@ -1,13 +1,8 @@
 import {
   Table,
   Space,
-  Button,
-  Modal,
   Col,
   Row,
-  Select,
-  DatePicker,
-  Input,
   Popconfirm,
   message,
   Tooltip,
@@ -18,21 +13,18 @@ import "antd/dist/antd.css";
 import "./gantt.css";
 import {
   deleteDayoff,
+  deleteOtherJob,
   setTester,
-  updateDayoff,
 } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
-const { RangePicker } = DatePicker;
-const { Option } = Select;
 const { Panel } = Collapse;
 function Gantt(props) {
   const year = props.query.year;
   const month = props.query.month;
-  const group = props.query.group;
   const freshData = () => {
     props.updateData(props.tableData);
   };
@@ -53,10 +45,12 @@ function Gantt(props) {
         groups={props.groups}
         systemConfig={props.system}
       ></ReleaseTable>
+      <OtherJobTable
+        data={props.otherJobTable}
+        freshData={freshData}
+        system={props.system}
+      ></OtherJobTable>
       <DayOffTable
-        year={year}
-        month={month}
-        group={group}
         data={props.dayoffData}
         freshData={freshData}
         system={props.system}
@@ -323,7 +317,7 @@ function ReleaseTable(props) {
       <div style={{ width: "99%", margin: "15px auto 0" }}>
         <Table
           components={components}
-          title={() => "项目表"}
+          title={() => "Project"}
           columns={columns}
           dataSource={data}
         ></Table>
@@ -331,95 +325,82 @@ function ReleaseTable(props) {
     </>
   );
 }
-function DayOffRequest(props) {
-  const systemConfig = props.system;
-  const [user, setUser] = useState();
-  const [time, setTime] = useState();
-  const [system, setSystem] = useState(systemConfig.systemName);
+function OtherJobTable(props) {
+  const data = [...props.data];
 
-  const checkValid = () => {
-    if (!user) {
-      message.warning("Please select user");
-      return true;
-    }
-    if (!time) {
-      message.warning("Please select time");
-      return true;
-    }
-    return false;
-  };
-  const handleSumbit = () => {
-    if (checkValid()) {
-      return;
-    }
-    const request = { tester: user, systemName: system };
-    request.startTime = time[0].format("YYYY-MM-DD");
-    request.endTime = time[1].format("YYYY-MM-DD");
-    request.days = time[1].diff(time[0], "days") + 1;
-    updateDayoff([request]).then((response) => {
-      props.changeVisible(false);
-      message.success("Create Day off success!");
-      setTimeout(() => {
-        props.freshData();
-        cleanStatus();
-      }, 200);
-    });
-  };
-  const handleCancel = () => {
-    props.changeVisible(false);
-    cleanStatus();
-  };
-  const cleanStatus = () => {
-    setTime();
-    setUser();
-  };
+  const columns = [
+    {
+      title: "Index",
+      dataIndex: "index",
+      key: "index",
+    },
+    {
+      title: "JobName",
+      dataIndex: "jobName",
+      key: "jobName",
+    },
+    {
+      title: "UserName",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "StartTime",
+      dataIndex: "startTime",
+      key: "startTime",
+      render: (time) => {
+        return time.split(" ")[0];
+      },
+    },
+    {
+      title: "EndTime",
+      dataIndex: "endTime",
+      key: "endTime",
+      render: (time) => {
+        return time.split(" ")[0];
+      },
+    },
+
+    {
+      title: "System",
+      dataIndex: "systemName",
+      key: "systemName",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => (
+        <Space size="middle">
+          <Popconfirm
+            title="Are you sure to delete this task?"
+            onConfirm={() =>
+              deleteOtherJob(record).then((response) => {
+                message.success("Delete success!");
+                props.freshData();
+              })
+            }
+            onCancel={() => console.log("撤销")}
+            okText="Yes"
+            cancelText="No"
+          >
+            <a>Delete</a>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
   return (
     <>
-      <Modal
-        title="Request Dayoff"
-        centered
-        visible={props.visible}
-        onOk={handleSumbit}
-        onCancel={handleCancel}
-        width={500}
-      >
-        <Col>
-          <Row>
-            <span>User:</span>
-            <Select
-              style={{ width: "100%" }}
-              value={user}
-              onChange={(value) => setUser(value)}
-            >
-              {systemConfig.testerList.map((tester) => {
-                return (
-                  <Option value={tester} key={tester}>
-                    {tester}
-                  </Option>
-                );
-              })}
-            </Select>
-          </Row>
-          <Row>
-            <span>Time:</span>
-            <RangePicker
-              style={{ width: "100%" }}
-              value={time}
-              onChange={(value) => setTime(value)}
-            ></RangePicker>
-          </Row>
-          <Row>
-            <span>System:</span>
-            <Input style={{ width: "100%" }} value={system} disabled></Input>
-          </Row>
-        </Col>
-      </Modal>
+      <Table
+        title={() => "Other Job"}
+        dataSource={data}
+        columns={columns}
+      ></Table>
     </>
   );
 }
 
 function DayOffTable(props) {
-  const [visible, setVisible] = useState(false);
   const data = [...props.data];
 
   const columns = [
@@ -484,17 +465,11 @@ function DayOffTable(props) {
   ];
   return (
     <>
-      <Button type="primary" onClick={() => setVisible(true)}>
-        Request Dayoff
-      </Button>
-
-      <DayOffRequest
-        visible={visible}
-        changeVisible={setVisible}
-        freshData={props.freshData}
-        system={props.system}
-      ></DayOffRequest>
-      <Table dataSource={data} columns={columns}></Table>
+      <Table
+        title={() => "Day Off"}
+        dataSource={data}
+        columns={columns}
+      ></Table>
     </>
   );
 }
@@ -551,7 +526,33 @@ function formatter(i) {
       tiltle = JSON.parse(memo);
     }
     let bodyTemp;
-    if (tiltle.project) {
+    if (tiltle.key == "otherJob") {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>JobName: {tiltle.jobName}</span>
+          </Row>
+          <Row>
+            <span>StartTime: {tiltle.startTime}</span>
+          </Row>
+          <Row>
+            <span>EndTime: {tiltle.endTime}</span>
+          </Row>
+        </>
+      );
+    } else if (tiltle.key == "dayoff") {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>StartTime: {tiltle.startTime}</span>
+          </Row>
+
+          <Row>
+            <span>days: {tiltle.days}</span>
+          </Row>
+        </>
+      );
+    } else {
       bodyTemp = (
         <>
           <Row>
@@ -562,18 +563,6 @@ function formatter(i) {
           </Row>
           <Row>
             <span>LaunchTime: {tiltle.endTime}</span>
-          </Row>
-        </>
-      );
-    } else {
-      bodyTemp = (
-        <>
-          <Row>
-            <span>StartTime: {tiltle.startTime}</span>
-          </Row>
-
-          <Row>
-            <span>days: {tiltle.days}</span>
           </Row>
         </>
       );

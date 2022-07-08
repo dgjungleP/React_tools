@@ -253,7 +253,7 @@ function SystemConfig(props) {
             {systemConfigs.map((systemConfig) => {
               const config = systemConfig.config;
               return (
-                <Col span={4} key={systemConfig.id}>
+                <Col span={5} key={systemConfig.id}>
                   <Card
                     type="inner"
                     title={systemConfig.systemName}
