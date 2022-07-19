@@ -598,16 +598,13 @@ function checkTime(timeWindow, start, end) {
       timeArray.push(i);
     }
   });
-  console.log(timeArray);
   const currentTimeArray = [];
   for (let i = start; i <= end; i++) {
     currentTimeArray.push(i);
   }
-  console.log(currentTimeArray);
   const intersection = timeArray.filter((data) => {
     return currentTimeArray.indexOf(data) > -1;
   });
-  console.log(intersection);
   return intersection.length <= 0;
 }
 function getDateNumber(time) {
