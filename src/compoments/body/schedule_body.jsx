@@ -114,6 +114,7 @@ function ScheduleBody(props) {
           ...newDayoffTableData,
           ...newOtherJobTableData,
         ];
+        debugger;
         const newGanttData = makeGanttTableData(
           groupData(
             tableDataMerge,
@@ -124,6 +125,7 @@ function ScheduleBody(props) {
           currentQuery.month,
           currentQuery.year
         );
+        debugger;
         updateganttTableData(newGanttData);
         updateTableData(newTableData);
         updateLoading(false);
@@ -596,12 +598,17 @@ function checkTime(timeWindow, start, end) {
       timeArray.push(i);
     }
   });
-  timeArray.sort((l, r) => l - r);
-  const result =
-    timeArray.findIndex((data) => data == start) < 0 &&
-    timeArray.findIndex((data) => data == end) < 0 &&
-    (start < timeArray[timeArray.length - 1] || end > timeArray[0]);
-  return result;
+  console.log(timeArray);
+  const currentTimeArray = [];
+  for (let i = start; i <= end; i++) {
+    currentTimeArray.push(i);
+  }
+  console.log(currentTimeArray);
+  const intersection = timeArray.filter((data) => {
+    return currentTimeArray.indexOf(data) > -1;
+  });
+  console.log(intersection);
+  return intersection.length <= 0;
 }
 function getDateNumber(time) {
   return parseInt(time.split("-")[2]);
