@@ -114,11 +114,15 @@ function CurrentBody(props) {
       editable: true,
       width: 150,
       filters: makeFilter(statusSelectors),
-      onFilter: (value, record) => record.status.indexOf(value) === 0,
-      filterSearch: true,
-      onFilterDropdownOpenChange: (open) => {
-        console.log(open);
+      onFilter: (value, record) => {
+        return record.status.indexOf(value) === 0;
       },
+      // onFilterDropdownOpenChange: (open) => {
+      //   if (open) {
+      //     freshTableData();
+      //   }
+      // },
+      filterSearch: true,
       render: (status) => {
         return getTypeTag(status);
       },
@@ -313,6 +317,30 @@ function CurrentBody(props) {
         dataSource={data}
         loading={loading}
         pagination={false}
+        onChange={(pagination, filters, sorter, extra) => {
+          if (extra.action == "filter") {
+            const launchGroup = new Set(
+              extra.currentDataSource.map((daliy) => daliy.launchDay)
+            );
+            extra.currentDataSource.forEach((daily) => {
+              if (launchGroup.has(daily.launchDay)) {
+                const count = extra.currentDataSource
+                  .map((launchTime) =>
+                    launchTime.launchDay == daily.launchDay ? 1 : 0
+                  )
+                  .reduce((l, r) => l + r);
+                launchGroup.delete(daily.launchDay);
+                daily.miss = false;
+                daily.rowSpan = count;
+              } else if (!daily.miss) {
+                daily.miss = true;
+              }
+            });
+          }
+          if (!filters.status) {
+            freshTableData();
+          }
+        }}
       ></Table>
       <Row gutter={[16, 5]} style={{ marginTop: 100 }}>
         {timeWindow.map((time) => {
