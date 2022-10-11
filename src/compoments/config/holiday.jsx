@@ -26,7 +26,6 @@ import {
 import Modal from "antd/lib/modal/Modal";
 import Input from "antd/lib/input/Input";
 import moment from "moment";
-const { TabPane } = Tabs;
 
 const { Option } = Select;
 function HolidayConfig(props) {
@@ -79,10 +78,11 @@ function Ascription(props) {
           type="card"
           onChange={changeTab}
           style={{ backgroundColor: "white" }}
-        >
-          {config.map((system) => {
-            return (
-              <TabPane tab={system.systemName} key={system.id}>
+          items={config.map((system) => {
+            return {
+              label: system.systemName,
+              key: system.id,
+              children: (
                 <Row gutter={16}>
                   {userInfo
                     .filter((data) => data.system == system.id)
@@ -95,10 +95,10 @@ function Ascription(props) {
                       );
                     })}
                 </Row>
-              </TabPane>
-            );
+              ),
+            };
           })}
-        </Tabs>
+        ></Tabs>
       </Spin>
     </>
   );
@@ -231,7 +231,7 @@ function Holiday(props) {
         ></List>
       </Spin>
       <Modal
-        visible={modalShow}
+        open={modalShow}
         title="Holiday"
         onOk={handleOk}
         onCancel={handleCancel}

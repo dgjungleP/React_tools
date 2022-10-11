@@ -21,15 +21,17 @@ function SystemTab(props) {
   return (
     <>
       <Content className="card-container">
-        <Tabs defaultActiveKey="1" type="card">
-          {systemList.map((system) => {
-            return (
-              <TabPane tab={system.systemName} key={system.id}>
-                {props.template(system)}
-              </TabPane>
-            );
+        <Tabs
+          defaultActiveKey="1"
+          type="card"
+          items={systemList.map((system) => {
+            return {
+              label: system.systemName,
+              key: system.id,
+              children: props.template(system),
+            };
           })}
-        </Tabs>
+        ></Tabs>
       </Content>
     </>
   );

@@ -116,6 +116,9 @@ function CurrentBody(props) {
       filters: makeFilter(statusSelectors),
       onFilter: (value, record) => record.status.indexOf(value) === 0,
       filterSearch: true,
+      onFilterDropdownOpenChange: (open) => {
+        console.log(open);
+      },
       render: (status) => {
         return getTypeTag(status);
       },
@@ -489,7 +492,7 @@ function OperateModal(props) {
   return (
     <Modal
       title={props.title}
-      visible={props.visible}
+      open={props.visible}
       onOk={handleOk}
       onCancel={handleCancel}
       forceRender
@@ -501,7 +504,7 @@ function OperateModal(props) {
         <Form.Item label={"Move In:"} name={"moveIn"}>
           <Select mode="multiple">
             {config.testerList.map((user) => {
-              return <Option key={user}>{user}</Option>;
+              return <Select.Option key={user}>{user}</Select.Option>;
             })}
           </Select>
         </Form.Item>

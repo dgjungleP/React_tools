@@ -321,7 +321,7 @@ function OtherJobRequest(props) {
       <Modal
         title="Request Other Job"
         centered
-        visible={props.visible}
+        open={props.visible}
         onOk={handleSumbit}
         onCancel={handleCancel}
         width={500}
@@ -435,7 +435,7 @@ function DayOffRequest(props) {
       <Modal
         title="Request Dayoff"
         centered
-        visible={props.visible}
+        open={props.visible}
         onOk={handleSumbit}
         onCancel={handleCancel}
         width={500}

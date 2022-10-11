@@ -118,7 +118,7 @@ function SystemConfigModal(props) {
     <Modal
       title="Create System Config"
       centered
-      visible={props.visible}
+      open={props.visible}
       onOk={handleOk}
       onCancel={handleClose}
       width={500}

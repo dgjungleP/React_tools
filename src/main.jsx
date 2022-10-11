@@ -24,22 +24,36 @@ const { Sider } = Layout;
 function MyMenus(props) {
   const location = useLocation();
   const baseRoute = location.pathname.split("/")[1];
+  const items = [
+    {
+      label: <Link to="/schedule">Schedule</Link>,
+      key: "schedule",
+      icon: <PieChartOutlined />,
+    },
+    {
+      label: <Link to="/daily">Daily Launch</Link>,
+      key: "daily",
+      icon: <CalendarOutlined />,
+    },
+    {
+      label: <Link to="/system">System Config</Link>,
+      key: "system",
+      icon: <SettingOutlined />,
+    },
+    {
+      label: <Link to="/holiday">Holiday Config</Link>,
+      key: "holiday",
+      icon: <SmileOutlined />,
+    },
+  ];
   return (
     <>
-      <Menu theme="light" defaultSelectedKeys={[baseRoute]} mode="inline">
-        <Menu.Item key="schedule" icon={<PieChartOutlined />}>
-          <Link to="/schedule">Schedule</Link>
-        </Menu.Item>
-        <Menu.Item key="daily" icon={<CalendarOutlined />}>
-          <Link to="/daily">Daily Launch</Link>
-        </Menu.Item>
-        <Menu.Item key="system" icon={<SettingOutlined />}>
-          <Link to="/system">System Config</Link>
-        </Menu.Item>
-        <Menu.Item key="holiday" icon={<SmileOutlined />}>
-          <Link to="/holiday">Holiday Config</Link>
-        </Menu.Item>
-      </Menu>
+      <Menu
+        theme="light"
+        defaultSelectedKeys={[baseRoute]}
+        mode="inline"
+        items={items}
+      ></Menu>
     </>
   );
 }
