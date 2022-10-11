@@ -114,7 +114,6 @@ function ScheduleBody(props) {
           ...newDayoffTableData,
           ...newOtherJobTableData,
         ];
-        debugger;
         const newGanttData = makeGanttTableData(
           groupData(
             tableDataMerge,
@@ -125,7 +124,6 @@ function ScheduleBody(props) {
           currentQuery.month,
           currentQuery.year
         );
-        debugger;
         updateganttTableData(newGanttData);
         updateTableData(newTableData);
         updateLoading(false);
