@@ -89,6 +89,10 @@ function CurrentBody(props) {
   const [loading, setLoading] = useState(false);
   const [modalVisiable, setModalVisiable] = useState(false);
   const [currentDaily, setCurrentDaily] = useState({});
+  const statusSelectors = Array.from(
+    new Set(data.map((inner) => inner.status))
+  );
+
   const baseColumns = [
     {
       title: "Launch Day",
@@ -109,6 +113,9 @@ function CurrentBody(props) {
       dataIndex: "status",
       editable: true,
       width: 150,
+      filters: makeFilter(statusSelectors),
+      onFilter: (value, record) => record.status.indexOf(value) === 0,
+      filterSearch: true,
       render: (status) => {
         return getTypeTag(status);
       },
@@ -573,5 +580,10 @@ function getTypeTag(status) {
     case "NONE":
       return <Tag color="default">None</Tag>;
   }
+}
+function makeFilter(selectors) {
+  return selectors.map((data) => {
+    return { text: data, value: data };
+  });
 }
 export { DailyBody };
