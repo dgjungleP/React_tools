@@ -266,6 +266,9 @@ function CurrentBody(props) {
     setData(currentData);
   };
   const freshTableData = () => {
+    if (timeWindow.length === 0) {
+      return;
+    }
     setLoading(true);
     const query = {
       timeList: timeWindow,
@@ -274,6 +277,9 @@ function CurrentBody(props) {
       hasHistory: systemConfig.hasHistory,
       system: systemConfig.systemName,
     };
+    if (query.timeList.size == 0) {
+      return;
+    }
     getDailys(query)
       .then((response) => {
         const data = response.data.map((pj) => {
@@ -384,6 +390,10 @@ function TimeList(props) {
       hasHistory: systemConfig.hasHistory,
       system: systemConfig.systemName,
     };
+
+    if (query.timeList.size == 0) {
+      return;
+    }
     getDailys(query)
       .then((response) => {
         setData(response.data);

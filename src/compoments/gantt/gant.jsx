@@ -564,6 +564,12 @@ function formatter(i) {
           <Row>
             <span>LaunchTime: {tiltle.endTime}</span>
           </Row>
+          <Row>
+            <span>ActuallyDoneTime: {tiltle.actuallyDoneTime}</span>
+          </Row>
+          <Row>
+            <span>Used Time: {tiltle.usedTime}</span>
+          </Row>
         </>
       );
     }

@@ -64,33 +64,30 @@ function ScheduleBody(props) {
       query.system = systemConfig.systemName;
       query.queryLink = systemConfig.dataLink;
       query.hasHistory = systemConfig.hasHistory;
-      getProject(query)
-        .then((response) => {
-          setShowGant(true);
-          flushDate(response.data, query);
-        })
-        .catch(() => {
-          setShowGant(false);
-          updateLoading(false);
-        });
+      changeData(query);
     } else {
       setShowGant(false);
       updateLoading(false);
     }
   };
-  const chanDage = (newTableData, currentQuery) => {
+  const changeData = (_newTableData, currentQuery) => {
     currentQuery = currentQuery ? currentQuery : query;
     updateLoading(true);
-    Promise.all([getDayoff(currentQuery), getOtherJob(currentQuery)]).then(
-      ([newDayoffTableData, newOtherJobTableData]) => {
+    Promise.all([
+      getDayoff(currentQuery),
+      getOtherJob(currentQuery),
+      getProject(currentQuery),
+    ])
+      .then(([newDayoffTableData, newOtherJobTableData, newTableDataQuery]) => {
         newDayoffTableData = newDayoffTableData.data.map((dayoff, index) => {
-          dayoff.key = dayoff.id;
           dayoff.index = index + 1;
           dayoff.name = dayoff.tester;
           dayoff.releaseDay = dayoff.startTime;
           dayoff.launchDay = dayoff.endTime;
           dayoff.type = "dayoff";
           dayoff.project = "休";
+          dayoff.key =
+            dayoff.id + dayoff.name + dayoff.releaseDay + dayoff.launchDay;
           return dayoff;
         });
         newOtherJobTableData = newOtherJobTableData.data.map(
@@ -103,12 +100,17 @@ function ScheduleBody(props) {
             otherJob.launchDay = otherJob.endTime;
             otherJob.type = "otherJob";
             otherJob.project = otherJob.jobName;
+            otherJob.key =
+              otherJob.id +
+              otherJob.name +
+              otherJob.tester +
+              otherJob.launchDay;
             return otherJob;
           }
         );
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
-
+        const newTableData = makeData(newTableDataQuery.data);
         const tableDataMerge = [
           ...newTableData,
           ...newDayoffTableData,
@@ -127,13 +129,16 @@ function ScheduleBody(props) {
         updateganttTableData(newGanttData);
         updateTableData(newTableData);
         updateLoading(false);
-      }
-    );
+      })
+      .then(() => {
+        setShowGant(true);
+      })
+      .catch(() => {
+        setShowGant(false);
+        updateLoading(false);
+      });
   };
-  const flushDate = (responseData, query) => {
-    const newTableData = makeData(responseData);
-    chanDage(newTableData, query);
-  };
+
   useEffect(() => {
     freashData(query);
   }, [query]);
@@ -146,7 +151,7 @@ function ScheduleBody(props) {
         groups={groups}
         system={systemConfig}
         tableData={tableData}
-        updateData={chanDage}
+        updateData={changeData}
       ></Header>
       <Spin spinning={loading}>
         <Gantt
@@ -156,7 +161,7 @@ function ScheduleBody(props) {
           ganttTableData={ganttTableData}
           dayoffData={dayoffTable}
           otherJobTable={otherJobTable}
-          updateData={chanDage}
+          updateData={changeData}
           selectors={selectors}
           simple={simple}
           system={systemConfig}
@@ -191,7 +196,7 @@ function Header(props) {
   };
 
   const freshData = () => {
-    props.updateData(props.tableData);
+    props.updateData([props.tableData]);
   };
   return (
     <>
@@ -657,7 +662,8 @@ function makeLine(dataList, result, month, year) {
       memo.project = data.project;
       memo.startTime = data.releaseDay;
       memo.endTime = data.launchDay;
-
+      memo.usedTime = data.usedTime;
+      memo.actuallyDoneTime = data.actuallyDoneTime || "";
       result[start] =
         data.project +
         "-Release-" +
@@ -692,9 +698,12 @@ function makeData(json) {
         base.version +
         base.launchDay +
         base.projectName +
-        base.tester;
+        base.tester +
+        Math.random(100);
       base.group = item.group;
       base.division = item.division;
+      base.usedTime = item.usedTime;
+      base.actuallyDoneTime = item.actuallyDoneTime;
       result.push(base);
       count++;
     }
