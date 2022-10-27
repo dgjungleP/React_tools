@@ -19,9 +19,15 @@ import {
   Tooltip,
   Switch,
   message,
+  Button,
+  notification,
 } from "antd";
 import moment from "moment";
-import { getDailys, setDaliy } from "../../server/project-service";
+import {
+  getDailys,
+  setDaliy,
+  freshServiceCache,
+} from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import { PlusCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
 const { RangePicker } = DatePicker;
@@ -450,24 +456,49 @@ function Header(props) {
     newQuery.end = dateString[1];
     props.chanegQuery(newQuery);
   };
+  const freshCache = () => {
+    freshServiceCache().then(() => {
+      const newQuery = JSON.parse(JSON.stringify(query));
+      newQuery.fresh = true;
+      props.chanegQuery(newQuery);
+      notification.open({
+        message: "Fresh Chache",
+        description: "You success clean the chache ",
+      });
+    });
+  };
 
   return (
-    <Row gutter={15} justify="center" style={{ marginTop: 10 }} align="middle">
-      <Col>
-        <span style={{ marginRight: 5 }}>Time:</span>{" "}
-        <RangePicker
-          onChange={onTimeChange}
-          defaultValue={[moment(query.start), moment(query.end)]}
-        ></RangePicker>
-      </Col>
-      <Col>
-        <span style={{ marginRight: 5 }}>LocalZone:</span>
-        <Switch
-          checked={props.localZone}
-          onClick={props.handleLocalZone}
-        ></Switch>
-      </Col>
-    </Row>
+    <>
+      <Row
+        gutter={15}
+        justify="center"
+        style={{ marginTop: 10 }}
+        align="middle"
+      >
+        <Col>
+          <span style={{ marginRight: 5 }}>Time:</span>{" "}
+          <RangePicker
+            onChange={onTimeChange}
+            defaultValue={[moment(query.start), moment(query.end)]}
+          ></RangePicker>
+        </Col>
+        <Col>
+          <span style={{ marginRight: 5 }}>LocalZone:</span>
+          <Switch
+            checked={props.localZone}
+            onClick={props.handleLocalZone}
+          ></Switch>
+        </Col>{" "}
+        <Button
+          type="primary"
+          onClick={freshCache}
+          style={{ marginLeft: "auto" }}
+        >
+          Fresh
+        </Button>
+      </Row>
+    </>
   );
 }
 

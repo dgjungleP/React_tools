@@ -64,6 +64,9 @@ function updateUserInfo(request) {
 function setDaliy(request) {
   return axios.post(`${baseApi}set/daily`, request);
 }
+function freshServiceCache() {
+  return axios.get(`${baseApi}fresh`);
+}
 export {
   getProject,
   setTester,
@@ -83,4 +86,5 @@ export {
   updateOtherJob,
   deleteOtherJob,
   getOtherJob,
+  freshServiceCache,
 };

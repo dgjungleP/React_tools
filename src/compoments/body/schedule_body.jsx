@@ -11,6 +11,7 @@ import {
   Input,
   message,
   Divider,
+  notification,
 } from "antd";
 import "antd/dist/antd.css";
 import "./schedule_body.css";
@@ -21,6 +22,7 @@ import {
   getOtherJob,
   updateDayoff,
   updateOtherJob,
+  freshServiceCache,
 } from "../../server/project-service";
 import moment from "moment";
 const { Option } = Select;
@@ -198,6 +200,15 @@ function Header(props) {
   const freshData = () => {
     props.updateData([props.tableData]);
   };
+  const freshCache = () => {
+    freshServiceCache().then(() => {
+      freshData();
+      notification.open({
+        message: "Fresh Chache",
+        description: "You success clean the chache ",
+      });
+    });
+  };
   return (
     <>
       <Row
@@ -238,6 +249,13 @@ function Header(props) {
           <span>Simple:</span>{" "}
           <Switch checked={simple} onChange={onHistoryChange} />
         </Col>
+        <Button
+          type="primary"
+          onClick={freshCache}
+          style={{ marginLeft: "auto" }}
+        >
+          Fresh
+        </Button>
       </Row>
       <Divider>Operations</Divider>
       <Row gutter={15} justify="left" style={{ marginLeft: 40 }} align="start">
