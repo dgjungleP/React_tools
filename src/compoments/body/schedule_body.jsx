@@ -57,9 +57,9 @@ function ScheduleBody(props) {
       "month"
     );
     updateQuery(newQuery);
-    freashData(newQuery);
+    // freshData(newQuery);
   };
-  const freashData = (query) => {
+  const freshData = (query) => {
     updateLoading(true);
     query = query ? query : {};
     if (check(query)) {
@@ -142,7 +142,7 @@ function ScheduleBody(props) {
   };
 
   useEffect(() => {
-    freashData(query);
+    freshData(query);
   }, [query]);
   return (
     <>
