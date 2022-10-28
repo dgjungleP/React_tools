@@ -34,6 +34,7 @@ function SystemConfigModal(props) {
   const [needGroup, setNeedGroup] = useState();
 
   const [needDivision, setNeedDivision] = useState();
+  const [needFetch, setNeedFetch] = useState();
 
   useEffect(() => {
     updateConfig(config);
@@ -47,6 +48,7 @@ function SystemConfigModal(props) {
     setNeedGroup(config.needGroup);
     setDivisionList(config.divisionList);
     setNeedDivision(config.needDivision);
+    setNeedFetch(config.needFetch);
   };
   const handleOk = () => {
     if (!checklimit()) {
@@ -62,6 +64,7 @@ function SystemConfigModal(props) {
     config.needGroup = needGroup;
     config.divisionList = divisionList;
     config.needDivision = needDivision;
+    config.needFetch = needFetch;
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
@@ -72,13 +75,6 @@ function SystemConfigModal(props) {
     cleanStatus();
   };
   const cleanStatus = () => {
-    // setSystemName("");
-    // setGroupList([]);
-    // setTesterList([]);
-    // // setPreConfig({});
-    // setDataLink("");
-    // setHasHistory("");
-    // setNeedGroup("");
     updateConfig({});
     props.setSelectedSystem({});
   };
@@ -113,7 +109,9 @@ function SystemConfigModal(props) {
   const onNeedDivisionChange = () => {
     setNeedDivision(!needDivision);
   };
-
+  const onNeedFetchChange = () => {
+    setNeedFetch(!needFetch);
+  };
   return (
     <Modal
       title="Create System Config"
@@ -194,6 +192,15 @@ function SystemConfigModal(props) {
             style={{ marginLeft: 5 }}
             checked={needDivision}
             onChange={onNeedDivisionChange}
+            size="small"
+          />
+        </Row>
+        <Row align="middle">
+          <span>NeedFetch:</span>
+          <Switch
+            style={{ marginLeft: 5 }}
+            checked={needFetch}
+            onChange={onNeedFetchChange}
             size="small"
           />
         </Row>
@@ -337,6 +344,15 @@ function SystemConfig(props) {
                         <Switch
                           style={{ marginLeft: 5 }}
                           checked={config.needDivision}
+                          size="small"
+                          disabled
+                        />
+                      </Row>
+                      <Row align="middle">
+                        <span>Need Fetch:</span>
+                        <Switch
+                          style={{ marginLeft: 5 }}
+                          checked={config.needFetch}
                           size="small"
                           disabled
                         />
