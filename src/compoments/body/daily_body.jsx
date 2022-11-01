@@ -29,7 +29,11 @@ import {
   freshServiceCache,
 } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
-import { PlusCircleOutlined, MinusCircleOutlined } from "@ant-design/icons";
+import {
+  PlusCircleOutlined,
+  MinusCircleOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 const baseTimeFormat = "YYYY-MM-DD";
@@ -490,13 +494,16 @@ function Header(props) {
             onClick={props.handleLocalZone}
           ></Switch>
         </Col>{" "}
-        <Button
-          type="primary"
-          onClick={freshCache}
-          style={{ marginLeft: "auto" }}
-        >
-          Fresh
-        </Button>
+        <Tooltip title="Fresh cache for actrual data">
+          <Button
+            type="primary"
+            onClick={freshCache}
+            style={{ marginRight: "auto" }}
+            shape="circle"
+          >
+            <ReloadOutlined />
+          </Button>
+        </Tooltip>
       </Row>
     </>
   );

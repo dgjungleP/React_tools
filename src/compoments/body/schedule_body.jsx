@@ -12,10 +12,12 @@ import {
   message,
   Divider,
   notification,
+  Tooltip,
 } from "antd";
 import "antd/dist/antd.css";
 import "./schedule_body.css";
 import { Gantt } from "../gantt/gant";
+import { ReloadOutlined } from "@ant-design/icons";
 import {
   getDayoff,
   getProject,
@@ -246,16 +248,19 @@ function Header(props) {
           </Select>
         </Col>
         <Col>
-          <span>Simple:</span>{" "}
+          <span>Simple:</span>
           <Switch checked={simple} onChange={onHistoryChange} />
         </Col>
-        <Button
-          type="primary"
-          onClick={freshCache}
-          style={{ marginLeft: "auto" }}
-        >
-          Fresh
-        </Button>
+        <Tooltip title="Fresh cache for actrual data">
+          <Button
+            type="primary"
+            onClick={freshCache}
+            style={{ marginRight: "auto" }}
+            shape="circle"
+          >
+            <ReloadOutlined />
+          </Button>
+        </Tooltip>
       </Row>
       <Divider>Operations</Divider>
       <Row gutter={15} justify="left" style={{ marginLeft: 40 }} align="start">
