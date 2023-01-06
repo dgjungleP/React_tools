@@ -307,6 +307,7 @@ function ReleaseTable(props) {
       projectId: row.project,
       tester: row.tester,
       system: systemConfig.systemName,
+      systemId: systemConfig.id,
     }).then((response) => {
       console.log(response);
     });

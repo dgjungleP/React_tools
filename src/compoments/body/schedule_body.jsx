@@ -322,7 +322,12 @@ function OtherJobRequest(props) {
     if (checkValid()) {
       return;
     }
-    const request = { user: user, systemName: system, jobName: jobName };
+    const request = {
+      user: user,
+      systemName: system,
+      jobName: jobName,
+      systemId: systemConfig.id,
+    };
     request.startTime = time[0].format("YYYY-MM-DD");
     request.endTime = time[1].format("YYYY-MM-DD");
     request.days = time[1].diff(time[0], "days") + 1;
@@ -437,7 +442,11 @@ function DayOffRequest(props) {
     if (checkValid()) {
       return;
     }
-    const request = { tester: user, systemName: system };
+    const request = {
+      tester: user,
+      systemName: system,
+      systemId: systemConfig.id,
+    };
     request.startTime = time[0].format("YYYY-MM-DD");
     request.endTime = time[1].format("YYYY-MM-DD");
     request.days = time[1].diff(time[0], "days") + 1;
