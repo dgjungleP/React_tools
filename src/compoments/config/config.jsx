@@ -35,6 +35,7 @@ function SystemConfigModal(props) {
 
   const [needDivision, setNeedDivision] = useState();
   const [needFetch, setNeedFetch] = useState();
+  const [localTest, setLocalTest] = useState();
 
   useEffect(() => {
     updateConfig(config);
@@ -49,6 +50,7 @@ function SystemConfigModal(props) {
     setDivisionList(config.divisionList);
     setNeedDivision(config.needDivision);
     setNeedFetch(config.needFetch);
+    setLocalTest(config.localTest);
   };
   const handleOk = () => {
     if (!checklimit()) {
@@ -65,6 +67,7 @@ function SystemConfigModal(props) {
     config.divisionList = divisionList;
     config.needDivision = needDivision;
     config.needFetch = needFetch;
+    config.localTest = localTest;
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
@@ -111,6 +114,9 @@ function SystemConfigModal(props) {
   };
   const onNeedFetchChange = () => {
     setNeedFetch(!needFetch);
+  };
+  const onLocalTestChange = () => {
+    setLocalTest(!localTest);
   };
   return (
     <Modal
@@ -201,6 +207,15 @@ function SystemConfigModal(props) {
             style={{ marginLeft: 5 }}
             checked={needFetch}
             onChange={onNeedFetchChange}
+            size="small"
+          />
+        </Row>
+        <Row align="middle">
+          <span>LocalTester:</span>
+          <Switch
+            style={{ marginLeft: 5 }}
+            checked={localTest}
+            onChange={onLocalTestChange}
             size="small"
           />
         </Row>
@@ -353,6 +368,15 @@ function SystemConfig(props) {
                         <Switch
                           style={{ marginLeft: 5 }}
                           checked={config.needFetch}
+                          size="small"
+                          disabled
+                        />
+                      </Row>
+                      <Row align="middle">
+                        <span>Local Tester:</span>
+                        <Switch
+                          style={{ marginLeft: 5 }}
+                          checked={config.localTest}
                           size="small"
                           disabled
                         />
