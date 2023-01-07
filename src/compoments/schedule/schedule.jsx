@@ -6,9 +6,10 @@ import { Layout, Tabs } from "antd";
 import { getSystemConfig } from "../../server/project-service";
 import { DailyBody } from "../body/daily_body";
 const { Content } = Layout;
-const { TabPane } = Tabs;
 
 function SystemTab(props) {
+  const filter = props.filter ? props.filter : (_data) => true;
+  console.log(filter);
   const [systemList, setSystemList] = useState([]);
   useEffect(
     () =>
@@ -24,7 +25,7 @@ function SystemTab(props) {
         <Tabs
           defaultActiveKey="1"
           type="card"
-          items={systemList.map((system) => {
+          items={systemList.filter(filter).map((system) => {
             return {
               label: system.systemName,
               key: system.id,
@@ -36,21 +37,23 @@ function SystemTab(props) {
     </>
   );
 }
-function ShceduleTab(props) {
+function ShceduleTab() {
   return (
     <SystemTab
       template={(system) => {
         return <ScheduleBody systemConfig={system.config}></ScheduleBody>;
       }}
+      filter={(data) => !data.config.localTest}
     ></SystemTab>
   );
 }
-function DailyTab(props) {
+function DailyTab() {
   return (
     <SystemTab
       template={(system) => {
         return <DailyBody systemConfig={system.config}></DailyBody>;
       }}
+      filter={(data) => !data.config.localTest}
     ></SystemTab>
   );
 }
