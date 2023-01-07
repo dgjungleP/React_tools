@@ -39,17 +39,20 @@ function Gantt(props) {
         ></GanttTable>
       </div>
       {props.table(props)}
-
-      <OtherJobTable
-        data={props.otherJobTable}
-        freshData={freshData}
-        system={props.system}
-      ></OtherJobTable>
-      <DayOffTable
-        data={props.dayoffData}
-        freshData={freshData}
-        system={props.system}
-      ></DayOffTable>
+      {props.needOtherJob && (
+        <OtherJobTable
+          data={props.otherJobTable}
+          freshData={freshData}
+          system={props.system}
+        ></OtherJobTable>
+      )}
+      {props.needDayOff && (
+        <DayOffTable
+          data={props.dayoffData}
+          freshData={freshData}
+          system={props.system}
+        ></DayOffTable>
+      )}
     </>
   );
 }

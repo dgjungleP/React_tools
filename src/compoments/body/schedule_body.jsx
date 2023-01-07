@@ -174,6 +174,8 @@ function ScheduleBody(props) {
           system={systemConfig}
           groups={groups}
           table={table}
+          needDayOff={props.needDayOff}
+          needOtherJob={props.needOtherJob}
         ></Gantt>
       </Spin>
     </>
@@ -268,27 +270,32 @@ function Header(props) {
         </Tooltip>
       </Row>
       <Divider>Operations</Divider>
+      {(needDayOff || needOtherJob) && (
+        <Row
+          gutter={15}
+          justify="left"
+          style={{ marginLeft: 40 }}
+          align="start"
+        >
+          {needDayOff && (
+            <Col>
+              <DayOffRequestClick
+                freshData={freshData}
+                system={props.system}
+              ></DayOffRequestClick>
+            </Col>
+          )}
+          {needOtherJob && (
+            <Col>
+              <OtherJobClick
+                freshData={freshData}
+                system={props.system}
+              ></OtherJobClick>
+            </Col>
+          )}
+        </Row>
+      )}
 
-      <Row
-        gutter={15}
-        justify="left"
-        style={{ marginLeft: 40 }}
-        align="start"
-        hidden={!needDayOff && !needOtherJob}
-      >
-        <Col hidden={!needDayOff}>
-          <DayOffRequestClick
-            freshData={freshData}
-            system={props.system}
-          ></DayOffRequestClick>
-        </Col>
-        <Col hidden={!needOtherJob}>
-          <OtherJobClick
-            freshData={freshData}
-            system={props.system}
-          ></OtherJobClick>
-        </Col>
-      </Row>
       <Divider></Divider>
     </>
   );
