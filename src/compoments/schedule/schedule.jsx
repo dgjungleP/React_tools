@@ -5,6 +5,7 @@ import { ScheduleBody } from "../body/schedule_body";
 import { Layout, Tabs } from "antd";
 import { getSystemConfig } from "../../server/project-service";
 import { DailyBody } from "../body/daily_body";
+import { ReleaseTable } from "../gantt/gant";
 const { Content } = Layout;
 
 function SystemTab(props) {
@@ -41,9 +42,39 @@ function ShceduleTab() {
   return (
     <SystemTab
       template={(system) => {
-        return <ScheduleBody systemConfig={system.config}></ScheduleBody>;
+        return (
+          <ScheduleBody
+            systemConfig={system.config}
+            needDayOff={true}
+            needOtherJob={true}
+            table={(props) => (
+              <ReleaseTable
+                data={props.tableData}
+                updateData={props.updateData}
+                selectors={props.selectors}
+                groups={props.groups}
+                systemConfig={props.system}
+              ></ReleaseTable>
+            )}
+          ></ScheduleBody>
+        );
       }}
       filter={(data) => !data.config.localTest}
+    ></SystemTab>
+  );
+}
+function LTShceduleTab() {
+  return (
+    <SystemTab
+      template={(system) => {
+        return (
+          <ScheduleBody
+            systemConfig={system.config}
+            needDayOff={true}
+          ></ScheduleBody>
+        );
+      }}
+      filter={(data) => data.config.localTest}
     ></SystemTab>
   );
 }
@@ -58,4 +89,4 @@ function DailyTab() {
   );
 }
 
-export { ShceduleTab, DailyTab };
+export { ShceduleTab, DailyTab, LTShceduleTab };

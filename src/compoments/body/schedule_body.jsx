@@ -33,6 +33,7 @@ const { RangePicker } = DatePicker;
 function ScheduleBody(props) {
   const date = new Date();
   const systemConfig = props.systemConfig;
+
   const [groups, setGroup] = useState(systemConfig.groupList);
   const [selectors, setSelectors] = useState(systemConfig.testerList);
   const [query, updateQuery] = useState({
@@ -42,7 +43,7 @@ function ScheduleBody(props) {
     group: groups,
     system: systemConfig.systemName,
   });
-
+  const table = props.table ? props.table : () => {};
   const [showGantt, setShowGant] = useState(false);
   const [tableData, updateTableData] = useState([]);
   const [ganttTableData, updateganttTableData] = useState([]);
@@ -156,6 +157,8 @@ function ScheduleBody(props) {
         system={systemConfig}
         tableData={tableData}
         updateData={changeData}
+        needDayOff={props.needDayOff}
+        needOtherJob={props.needOtherJob}
       ></Header>
       <Spin spinning={loading}>
         <Gantt
@@ -170,6 +173,7 @@ function ScheduleBody(props) {
           simple={simple}
           system={systemConfig}
           groups={groups}
+          table={table}
         ></Gantt>
       </Spin>
     </>
@@ -178,7 +182,8 @@ function ScheduleBody(props) {
 
 function Header(props) {
   const query = props.query;
-
+  const needDayOff = props.needDayOff;
+  const needOtherJob = props.needOtherJob;
   const [time, updateTime] = useState({ year: query.year, month: query.month });
   const [group, updateGroup] = useState([...query.group]);
   const [simple, updatSimple] = useState(false);
@@ -263,14 +268,21 @@ function Header(props) {
         </Tooltip>
       </Row>
       <Divider>Operations</Divider>
-      <Row gutter={15} justify="left" style={{ marginLeft: 40 }} align="start">
-        <Col>
+
+      <Row
+        gutter={15}
+        justify="left"
+        style={{ marginLeft: 40 }}
+        align="start"
+        hidden={!needDayOff && !needOtherJob}
+      >
+        <Col hidden={!needDayOff}>
           <DayOffRequestClick
             freshData={freshData}
             system={props.system}
           ></DayOffRequestClick>
         </Col>
-        <Col>
+        <Col hidden={!needOtherJob}>
           <OtherJobClick
             freshData={freshData}
             system={props.system}

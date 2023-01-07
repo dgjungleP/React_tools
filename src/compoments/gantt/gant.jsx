@@ -38,13 +38,8 @@ function Gantt(props) {
           simple={props.simple}
         ></GanttTable>
       </div>
-      <ReleaseTable
-        data={props.tableData}
-        updateData={props.updateData}
-        selectors={props.selectors}
-        groups={props.groups}
-        systemConfig={props.system}
-      ></ReleaseTable>
+      {props.table(props)}
+
       <OtherJobTable
         data={props.otherJobTable}
         freshData={freshData}
@@ -644,4 +639,4 @@ function colorHeaderCell(i, day, simple) {
   };
 }
 
-export { Gantt };
+export { Gantt, ReleaseTable };
