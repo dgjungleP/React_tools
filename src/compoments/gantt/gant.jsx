@@ -398,7 +398,7 @@ function LTReleaseTable(props) {
     {
       title: "PB",
       key: "PB",
-      dataIndex: "crl_pb",
+      dataIndex: "jiraName",
     },
 
     {

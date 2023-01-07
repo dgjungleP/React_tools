@@ -146,6 +146,7 @@ function makeLocalData(json) {
       const base = {};
       base.project = item.projectNumber;
       base.crl_pb = item.jiraStory.link;
+      base.jiraName = item.jiraStory.name;
       base.status = item.status;
       base.projectName = item.jiraStory.projectName;
       base.localTester = item.localTester;
