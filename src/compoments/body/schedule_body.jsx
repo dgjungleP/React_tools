@@ -20,7 +20,6 @@ import { Gantt } from "../gantt/gant";
 import { ReloadOutlined } from "@ant-design/icons";
 import {
   getDayoff,
-  getProject,
   getOtherJob,
   updateDayoff,
   updateOtherJob,
@@ -33,6 +32,8 @@ const { RangePicker } = DatePicker;
 function ScheduleBody(props) {
   const date = new Date();
   const systemConfig = props.systemConfig;
+  const getProject = props.getProject;
+  const makeData = props.makeData;
 
   const [groups, setGroup] = useState(systemConfig.groupList);
   const [selectors, setSelectors] = useState(systemConfig.testerList);
@@ -728,40 +729,6 @@ function makeLine(dataList, result, month, year) {
       result.missCol.push(item);
     });
   });
-}
-
-function makeData(json) {
-  const result = [];
-  let count = 0;
-  try {
-    for (const item of json) {
-      const base = {};
-      base.project = item.projectNumber;
-      base.crl_pb = item.pb.map((data) => data.link).join(";");
-      base.version = item.pb.map((data) => data.versionId);
-      base.status = item.status;
-      base.projectName = item.pb[0].projectName;
-      base.tester = item.tester;
-      base.releaseDay = item.releaseDate;
-      base.launchDay = item.launchDate;
-      base.key =
-        base.project +
-        base.version +
-        base.launchDay +
-        base.projectName +
-        base.tester +
-        Math.random(100);
-      base.group = item.group;
-      base.division = item.division;
-      base.usedTime = item.usedTime;
-      base.actuallyDoneTime = item.actuallyDoneTime;
-      result.push(base);
-      count++;
-    }
-  } catch (e) {
-    console.log(e);
-  }
-  return result;
 }
 
 export { ScheduleBody };

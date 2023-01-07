@@ -174,7 +174,6 @@ function ReleaseTable(props) {
     title: !systemConfig.needDivision ? "Group" : "Division",
     key: !systemConfig.needDivision ? "group" : "division",
     dataIndex: !systemConfig.needDivision ? "group" : "division",
-    editable: true,
     filters: makeFilter(
       (systemConfig.needDivision
         ? systemConfig.divisionList
@@ -198,8 +197,6 @@ function ReleaseTable(props) {
       title: "Status",
       key: "Status",
       dataIndex: "status",
-      editable: true,
-
       filters: makeFilter(statusSelectors),
       onFilter: (value, record) => record.status.indexOf(value) === 0,
       filterSearch: true,
@@ -264,6 +261,178 @@ function ReleaseTable(props) {
           return a.launchDay > b.launchDay ? -1 : 1;
         },
       },
+    },
+  ];
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+  const columns = baseColumns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => {
+        return {
+          record,
+          editable: col.editable,
+          dataIndex: col.dataIndex,
+          title: col.title,
+          handleSave: handleSave,
+          selectors: props.selectors,
+          type: "multiple",
+        };
+      },
+    };
+  });
+
+  const updateData = (newData) => {
+    props.updateData(newData);
+  };
+  const handleSave = (row) => {
+    row.tester = (row.tester || []).join(",");
+    const newData = [...data];
+    const index = newData.findIndex((item) => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, { ...item, ...row });
+    setTester({
+      projectId: row.project,
+      tester: row.tester,
+      system: systemConfig.systemName,
+      systemId: systemConfig.id,
+    }).then((response) => {
+      console.log(response);
+    });
+    updateData(newData);
+  };
+  return (
+    <>
+      <div style={{ width: "99%", margin: "15px auto 0" }}>
+        <Table
+          components={components}
+          title={() => "Project"}
+          columns={columns}
+          dataSource={data}
+        ></Table>
+      </div>
+    </>
+  );
+}
+function LTReleaseTable(props) {
+  const systemConfig = props.systemConfig;
+  const [searchText, updateSearchText] = useState("");
+  const [searchedColumn, updateSearchedColumn] = useState("");
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <Filter
+        setSelectedKeys={setSelectedKeys}
+        selectedKeys={selectedKeys}
+        confirm={confirm}
+        clearFilters={clearFilters}
+        handlSearchText={updateSearchText}
+        handlSearchedColumn={updateSearchedColumn}
+        dataIndex={dataIndex}
+      ></Filter>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+    onFilterDropdownVisibleChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  const data = props.data;
+  const firstCol = {
+    title: !systemConfig.needDivision ? "Group" : "Division",
+    key: !systemConfig.needDivision ? "group" : "division",
+    dataIndex: !systemConfig.needDivision ? "group" : "division",
+    filters: makeFilter(
+      (systemConfig.needDivision
+        ? systemConfig.divisionList
+        : systemConfig.groupList) || []
+    ),
+    onFilter: (value, record) =>
+      record[!systemConfig.needDivision ? "group" : "division"].indexOf(
+        value
+      ) === 0,
+    filterSearch: true,
+  };
+  const baseColumns = [
+    firstCol,
+    {
+      title: "Project",
+      key: "Project",
+      dataIndex: "project",
+      ...getColumnSearchProps("project"),
+    },
+    {
+      title: "PB",
+      key: "PB",
+      dataIndex: "crl_pb",
+    },
+
+    {
+      title: "Tester",
+      key: "Tester",
+      dataIndex: "localTester",
+      sorter: {
+        compare: (a, b) => {
+          return a.tester > b.tester ? -1 : 1;
+        },
+      },
+      filters: makeFilter(props.selectors),
+      onFilter: (value, record) => record.tester.indexOf(value) === 0,
+      filterSearch: true,
+    },
+    {
+      title: "Prepare",
+      key: "Prepare",
+      dataIndex: "prepareDay",
+    },
+    {
+      title: "TestDay",
+      key: "TestDay",
+      dataIndex: "testDay",
+    },
+    {
+      title: "Testing",
+      key: "Testing",
+      dataIndex: "testingDay",
+    },
+    {
+      title: "Regression test",
+      key: "Regression test",
+      dataIndex: "regressionTestDay",
     },
   ];
   const components = {
@@ -642,4 +811,4 @@ function colorHeaderCell(i, day, simple) {
   };
 }
 
-export { Gantt, ReleaseTable };
+export { Gantt, ReleaseTable, LTReleaseTable };

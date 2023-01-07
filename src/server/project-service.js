@@ -14,6 +14,13 @@ function deleteOtherJob(requst) {
   return axios.delete(`${baseApi}other-job/${requst.id}`);
 }
 
+function getLocalShcedule(request) {
+  return axios.post(`${baseApi}projects/local`, request);
+}
+function updateLocalShcedule(request) {
+  return axios.post(`${baseApi}update/local/schedule`, request);
+}
+
 function getProject(request) {
   return axios.post(`${baseApi}projects`, request);
 }
@@ -87,4 +94,6 @@ export {
   deleteOtherJob,
   getOtherJob,
   freshServiceCache,
+  getLocalShcedule,
+  updateLocalShcedule,
 };
