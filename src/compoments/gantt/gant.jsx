@@ -7,21 +7,29 @@ import {
   message,
   Tooltip,
   Collapse,
+  Form,
+  Modal,
+  InputNumber,
+  Select,
+  DatePicker,
 } from "antd";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "antd/dist/antd.css";
 import "./gantt.css";
 import {
   deleteDayoff,
   deleteOtherJob,
   setTester,
+  updateLocalShcedule,
 } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
+import { func } from "prop-types";
 const { Panel } = Collapse;
+
 function Gantt(props) {
   const year = props.query.year;
   const month = props.query.month;
@@ -325,7 +333,8 @@ function LTReleaseTable(props) {
   const systemConfig = props.systemConfig;
   const [searchText, updateSearchText] = useState("");
   const [searchedColumn, updateSearchedColumn] = useState("");
-
+  const [modalVisiable, setModalVisiable] = useState(false);
+  const [current, setCurrent] = useState({});
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -400,7 +409,11 @@ function LTReleaseTable(props) {
       key: "PB",
       dataIndex: "jiraName",
     },
-
+    {
+      title: "PB Name",
+      key: "PBName",
+      dataIndex: "projectName",
+    },
     {
       title: "Tester",
       key: "Tester",
@@ -423,6 +436,9 @@ function LTReleaseTable(props) {
       title: "TestDay",
       key: "TestDay",
       dataIndex: "testDay",
+      render: (text, record) => {
+        return text ? moment(text).format("yyyy-MM-DD") : "";
+      },
     },
     {
       title: "Testing",
@@ -433,6 +449,14 @@ function LTReleaseTable(props) {
       title: "Regression test",
       key: "Regression test",
       dataIndex: "regressionTestDay",
+    },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      render: (text, record) => {
+        return <a onClick={() => showModal(record)}>Edit</a>;
+      },
     },
   ];
   const components = {
@@ -460,7 +484,10 @@ function LTReleaseTable(props) {
       },
     };
   });
-
+  const showModal = (current) => {
+    setModalVisiable(true);
+    setCurrent(current);
+  };
   const updateData = (newData) => {
     props.updateData(newData);
   };
@@ -489,6 +516,14 @@ function LTReleaseTable(props) {
           columns={columns}
           dataSource={data}
         ></Table>
+        <OperateModal
+          title={current.launchDay + "'s Project:" + current.project}
+          visible={modalVisiable}
+          data={current}
+          changeVisiable={setModalVisiable}
+          systemConfig={systemConfig}
+          fresh={props.fresh}
+        ></OperateModal>
       </div>
     </>
   );
@@ -641,7 +676,82 @@ function DayOffTable(props) {
     </>
   );
 }
+function OperateModal(props) {
+  const config = props.systemConfig;
+  const changeVisiable = props.changeVisiable;
+  const localZone = props.localZone;
+  const data = props.data;
+  const [currentData, setCurrentData] = useState({});
+  const [form] = Form.useForm();
+  const handleOk = () => {
+    const formValues = form.getFieldsValue();
+    const request = {
+      ...currentData,
+      ...formValues,
+    };
+    request.tester = (request.localTester || []).join(",");
 
+    request.system = config.systemName;
+    request.systemId = config.id;
+
+    request.projectId = request.project;
+    request.jira = request.jiraName;
+    request.prepareDay = request.prepareTime;
+    request.testingDay = request.testingTime;
+    request.regressionTestDay = request.regressionTestTime;
+    updateLocalShcedule(request).then((response) => {
+      props.fresh();
+      changeVisiable(false);
+    });
+    message.info("Please waiting for update!");
+  };
+  const handleCancel = () => {
+    changeVisiable(false);
+  };
+  useEffect(() => {
+    const currentData = { ...data };
+    currentData.localTester = currentData.localTester
+      ? currentData.localTester.split(",")
+      : undefined;
+    currentData.prepareTime = currentData.prepareDay;
+    currentData.testingTime = currentData.testingDay;
+    currentData.regressionTestTime = currentData.regressionTestDay;
+    currentData.testDay = moment(currentData.testDay);
+    setCurrentData(currentData);
+    form.setFieldsValue(currentData);
+  }, [data, localZone]);
+  return (
+    <Modal
+      title={props.title}
+      open={props.visible}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      forceRender
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item label={"Prepare Time:"} name={"prepareTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Testing Time:"} name={"testingTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Regression Test Time:"} name={"regressionTestTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Local Testster:"} name={"localTester"}>
+          <Select mode="multiple">
+            {config.testerList.map((user) => {
+              return <Select.Option key={user}>{user}</Select.Option>;
+            })}
+          </Select>
+        </Form.Item>
+        <Form.Item label={"Test Day:"} name={"testDay"}>
+          <DatePicker></DatePicker>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
 //Method
 
 function checkWeekendDay(weekNumber, simple) {

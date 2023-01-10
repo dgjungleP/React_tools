@@ -18,7 +18,6 @@ import {
   Select,
   Tooltip,
   Switch,
-  message,
   Button,
   notification,
 } from "antd";
@@ -534,6 +533,8 @@ function OperateModal(props) {
       })
       .join(",");
     request.system = config.systemName;
+    request.systemId = config.id;
+
     setDaliy(request).then((response) => {
       console.log(response);
     });

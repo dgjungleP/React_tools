@@ -14,7 +14,6 @@ const { Content } = Layout;
 
 function SystemTab(props) {
   const filter = props.filter ? props.filter : (_data) => true;
-  console.log(filter);
   const [systemList, setSystemList] = useState([]);
   useEffect(
     () =>
@@ -86,6 +85,7 @@ function LTShceduleTab() {
                 selectors={props.selectors}
                 groups={props.groups}
                 systemConfig={props.system}
+                fresh={props.fresh}
               ></LTReleaseTable>
             )}
           ></ScheduleBody>

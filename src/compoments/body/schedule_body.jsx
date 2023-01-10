@@ -66,6 +66,7 @@ function ScheduleBody(props) {
   const freshData = (query) => {
     updateLoading(true);
     query = query ? query : {};
+    console.log(query);
     if (check(query)) {
       query.system = systemConfig.systemName;
       query.queryLink = systemConfig.dataLink;
@@ -174,6 +175,7 @@ function ScheduleBody(props) {
           simple={simple}
           system={systemConfig}
           groups={groups}
+          fresh={() => freshData(query)}
           table={table}
           needDayOff={props.needDayOff}
           needOtherJob={props.needOtherJob}
