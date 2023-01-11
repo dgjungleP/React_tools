@@ -797,36 +797,44 @@ function groupUser() {
 }
 function formatter(i) {
   return (text, record, index) => {
-    let tiltle = {};
+    let title = {};
     if (record[i]) {
       let memo = record[i].split("-&")[1];
       memo = (memo || "{}").replace('/\\"/g', '"');
-      tiltle = JSON.parse(memo);
+      title = JSON.parse(memo);
     }
     let bodyTemp;
-    if (tiltle.key == "otherJob") {
+    if (title.key == "otherJob") {
       bodyTemp = (
         <>
           <Row>
-            <span>JobName: {tiltle.jobName}</span>
+            <span>JobName: {title.jobName}</span>
           </Row>
           <Row>
-            <span>StartTime: {tiltle.startTime}</span>
+            <span>StartTime: {title.startTime}</span>
           </Row>
           <Row>
-            <span>EndTime: {tiltle.endTime}</span>
+            <span>EndTime: {title.endTime}</span>
           </Row>
         </>
       );
-    } else if (tiltle.key == "dayoff") {
+    } else if (title.key == "dayoff") {
       bodyTemp = (
         <>
           <Row>
-            <span>StartTime: {tiltle.startTime}</span>
+            <span>StartTime: {title.startTime}</span>
           </Row>
 
           <Row>
-            <span>days: {tiltle.days}</span>
+            <span>days: {title.days}</span>
+          </Row>
+        </>
+      );
+    } else if (title.key == "local") {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>Project: {title.project}</span>
           </Row>
         </>
       );
@@ -834,19 +842,19 @@ function formatter(i) {
       bodyTemp = (
         <>
           <Row>
-            <span>Project: {tiltle.project}</span>
+            <span>Project: {title.project}</span>
           </Row>
           <Row>
-            <span>ReleaseTime: {tiltle.startTime}</span>
+            <span>ReleaseTime: {title.startTime}</span>
           </Row>
           <Row>
-            <span>LaunchTime: {tiltle.endTime}</span>
+            <span>LaunchTime: {title.endTime}</span>
           </Row>
           <Row>
-            <span>ActuallyDoneTime: {tiltle.actuallyDoneTime}</span>
+            <span>ActuallyDoneTime: {title.actuallyDoneTime}</span>
           </Row>
           <Row>
-            <span>Used Time: {tiltle.usedTime}</span>
+            <span>Used Time: {title.usedTime}</span>
           </Row>
         </>
       );
@@ -858,10 +866,10 @@ function formatter(i) {
           return (
             <Col>
               <Row>
-                <span>Type: {tiltle.type}</span>
+                <span>Type: {title.type}</span>
               </Row>
               <Row>
-                <span>User: {tiltle.user}</span>
+                <span>User: {title.user}</span>
               </Row>
               {bodyTemp}
             </Col>

@@ -34,7 +34,7 @@ function ScheduleBody(props) {
   const systemConfig = props.systemConfig;
   const getProject = props.getProject;
   const makeData = props.makeData;
-
+  const groupData = props.groupData;
   const [groups, setGroup] = useState(systemConfig.groupList);
   const [selectors, setSelectors] = useState(systemConfig.testerList);
   const [query, updateQuery] = useState({
@@ -115,6 +115,7 @@ function ScheduleBody(props) {
             return otherJob;
           }
         );
+        debugger;
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);
@@ -548,58 +549,7 @@ function getDays(year, month) {
   var d = new Date(year, month, 0);
   return d.getDate();
 }
-function groupData(tableData, year, month, selectors) {
-  let count = selectors.length;
-  const result = selectors.map((data, index) => ({
-    name: data,
-    dataList: [],
-    index: index,
-  }));
-  const groupData = tableData.flatMap((data) =>
-    (data.tester || "None").split(",").map((testerData) => {
-      const newData = {};
-      Object.assign(newData, data);
-      newData.tester = testerData;
-      return newData;
-    })
-  );
-  groupData
-    .filter((data) => data.tester && data.tester != "None")
-    .forEach((data) => {
-      const item = { name: data.tester };
-      let tag = true;
-      for (const resultItem of result) {
-        if (resultItem.name == item.name) {
-          const timeWindow = resultItem.dataList.map((dataItem) => {
-            return getTime(dataItem, month, year);
-          });
-          const time = getTime(data, month, year);
-          if (
-            checkTime(timeWindow, time.start, time.end) ||
-            resultItem.dataList.length == 0
-          ) {
-            resultItem.dataList.push(data);
-            tag = false;
-            break;
-          }
-        }
-      }
-      let index = (
-        result.find((data) => data.name == item.name) || { index: -1 }
-      ).index;
-      if (tag) {
-        item.dataList = [data];
-        item.index = index > 0 ? index : ++count;
-        result.push(item);
-      }
-    });
-  for (const item of result) {
-    item.dataList.sort((l, r) => {
-      return l.releaseDay > r.releaseDay ? -1 : 1;
-    });
-  }
-  return result;
-}
+
 function getTime(dataItem, month, year) {
   let start = getDateNumber(dataItem.releaseDay);
   let end = getDateNumber(dataItem.launchDay);
@@ -607,6 +557,28 @@ function getTime(dataItem, month, year) {
   let startYear = getYearNumber(dataItem.releaseDay);
   let endMoth = getMothNumber(dataItem.launchDay);
   let endYear = getYearNumber(dataItem.launchDay);
+
+  let overload = false;
+  if (startMoth < parseInt(month) || startYear < parseInt(year)) {
+    start = 1;
+    overload = true;
+  }
+  if (endMoth > parseInt(month) || endYear > parseInt(year)) {
+    end = getDays(year, month) + 1;
+    overload = true;
+  }
+  if (endMoth == parseInt(month) && endYear == parseInt(year)) {
+    overload = false;
+  }
+  return { start, end, overload };
+}
+function getLocalTime(starTime, endTime, month, year) {
+  let start = getDateNumber(starTime);
+  let end = getDateNumber(endTime);
+  let startMoth = getMothNumber(starTime);
+  let startYear = getYearNumber(starTime);
+  let endMoth = getMothNumber(endTime);
+  let endYear = getYearNumber(endTime);
 
   let overload = false;
   if (startMoth < parseInt(month) || startYear < parseInt(year)) {
@@ -648,22 +620,7 @@ function makeGanttTableData(tableDataGroup, month, year) {
     });
   return ganttTableData;
 }
-function checkTime(timeWindow, start, end) {
-  const timeArray = [];
-  timeWindow.forEach((time) => {
-    for (let i = time.start; i <= time.end; i++) {
-      timeArray.push(i);
-    }
-  });
-  const currentTimeArray = [];
-  for (let i = start; i <= end; i++) {
-    currentTimeArray.push(i);
-  }
-  const intersection = timeArray.filter((data) => {
-    return currentTimeArray.indexOf(data) > -1;
-  });
-  return intersection.length <= 0;
-}
+
 function getDateNumber(time) {
   return parseInt(time.split("-")[2]);
 }
@@ -675,7 +632,7 @@ function getMothNumber(time) {
 }
 function makeLine(dataList, result, month, year) {
   dataList.forEach((data) => {
-    const missCol = [];
+    let missCol = [];
     const { start, end, overload } = getTime(data, month, year);
     for (let i = start + 1; i < end; i++) {
       missCol.push(i);
@@ -711,6 +668,78 @@ function makeLine(dataList, result, month, year) {
       if (start != end) {
         missCol.push(end);
       }
+    } else if (data.type == "local") {
+      memo.type = "Local Test";
+      memo.project = data.project;
+      const prepareDayTime = data.prepareDayTime;
+      const regressionTestDayTime = data.regressionTestDayTime;
+      const testDay = data.testDay;
+      const testingDayTime = data.testingDayTime;
+
+      const prepareStart = getLocalTime(prepareDayTime, testDay, month, year);
+      const testStart = getLocalTime(prepareDayTime, testDay, month, year);
+      const testingStart = getLocalTime(testDay, testingDayTime, month, year);
+      const regressionTestStart = getLocalTime(
+        testingDayTime,
+        regressionTestDayTime,
+        month,
+        year
+      );
+      const regressionTestEnd = getLocalTime(
+        testingDayTime,
+        regressionTestDayTime,
+        month,
+        year
+      );
+      debugger;
+      result[prepareStart.start] =
+        data.jiraName.replace("-", " ") +
+        "-Prepare-" +
+        (testStart.end - prepareStart.start) +
+        "-&" +
+        JSON.stringify(memo);
+      result[testStart.end] =
+        data.jiraName.replace("-", " ") +
+        "-Test-" +
+        (testingStart.start + 1 - testStart.end) +
+        "-&" +
+        JSON.stringify(memo);
+      result[testingStart.start + 1] =
+        data.jiraName.replace("-", " ") +
+        "-Testing-" +
+        (regressionTestStart.start - testingStart.start) +
+        "-&" +
+        JSON.stringify(memo);
+      result[regressionTestStart.start + 1] =
+        data.jiraName.replace("-", " ") +
+        "-RegressionTest-" +
+        (regressionTestEnd.end - regressionTestStart.start) +
+        "-&" +
+        JSON.stringify(memo);
+      missCol = [];
+      debugger;
+      for (let i = prepareStart.start + 1; i < testStart.end; i++) {
+        missCol.push(i);
+      }
+      for (let i = testStart.end + 1; i < testingStart.start + 1; i++) {
+        missCol.push(i);
+      }
+      for (
+        let i = testingStart.start + 2;
+        i < regressionTestStart.start + 1;
+        i++
+      ) {
+        missCol.push(i);
+      }
+      for (
+        let i = regressionTestStart.start + 2;
+        i < regressionTestEnd.end + 1;
+        i++
+      ) {
+        missCol.push(i);
+      }
+      debugger;
+      result.dayCount += prepareStart - regressionTestEnd + 1;
     } else {
       memo.type = "项目";
       memo.project = data.project;
