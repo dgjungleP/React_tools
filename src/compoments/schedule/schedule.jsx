@@ -145,7 +145,6 @@ function makeData(json) {
   return result;
 }
 function groupData(tableData, year, month, selectors) {
-  debugger;
   let count = selectors.length;
   const result = selectors.map((data, index) => ({
     name: data,
@@ -238,7 +237,6 @@ function makeLocalData(json) {
   return result;
 }
 function groupLocalData(tableData, year, month, selectors) {
-  debugger;
   let count = selectors.length;
   const result = selectors.map((data, index) => ({
     name: data,

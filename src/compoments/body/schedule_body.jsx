@@ -115,7 +115,6 @@ function ScheduleBody(props) {
             return otherJob;
           }
         );
-        debugger;
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);
@@ -579,14 +578,22 @@ function getLocalTime(starTime, endTime, month, year) {
   let startYear = getYearNumber(starTime);
   let endMoth = getMothNumber(endTime);
   let endYear = getYearNumber(endTime);
-
+  const currentDate = moment([year, month - 1]);
+  const startDate = moment([startYear, startMoth - 1]);
+  const endDate = moment([endYear, endMoth - 1]);
   let overload = false;
-  if (startMoth < parseInt(month) || startYear < parseInt(year)) {
-    start = 1;
+  if (startDate.isBefore(currentDate)) {
+    start = 0;
+    overload = true;
+  } else if (startDate.isAfter(currentDate)) {
+    start = getDays(year, month) + 1;
     overload = true;
   }
-  if (endMoth > parseInt(month) || endYear > parseInt(year)) {
+  if (endDate.isAfter(currentDate)) {
     end = getDays(year, month) + 1;
+    overload = true;
+  } else if (endDate.isBefore(currentDate)) {
+    end = 0;
     overload = true;
   }
   if (endMoth == parseInt(month) && endYear == parseInt(year)) {
@@ -604,6 +611,9 @@ function makeGanttTableData(tableDataGroup, month, year) {
       const result = { key: index, rowSpan: 1, missCol: [], dayCount: 0 };
       result.name = data.name;
       makeLine(data.dataList, result, month, year);
+      if (result.miss) {
+        return;
+      }
       if (
         ganttTableData[index - 1] &&
         ganttTableData[index - 1].name == result.name
@@ -691,7 +701,6 @@ function makeLine(dataList, result, month, year) {
         month,
         year
       );
-      debugger;
       result[prepareStart.start] =
         data.jiraName.replace("-", " ") +
         "-Prepare-" +
@@ -717,7 +726,6 @@ function makeLine(dataList, result, month, year) {
         "-&" +
         JSON.stringify(memo);
       missCol = [];
-      debugger;
       for (let i = prepareStart.start + 1; i < testStart.end; i++) {
         missCol.push(i);
       }
@@ -738,8 +746,17 @@ function makeLine(dataList, result, month, year) {
       ) {
         missCol.push(i);
       }
-      debugger;
       result.dayCount += prepareStart - regressionTestEnd + 1;
+      const maxDay = getDays(year, month);
+      result.miss =
+        (prepareStart.start > maxDay &&
+          testStart.end > maxDay &&
+          testingStart.start + 1 > maxDay &&
+          regressionTestStart.start + 1 > maxDay) ||
+        (prepareStart.start <= 0 &&
+          testStart.end <= 0 &&
+          testingStart.start + 1 <= 0 &&
+          regressionTestStart.start + 1 <= 0);
     } else {
       memo.type = "项目";
       memo.project = data.project;
