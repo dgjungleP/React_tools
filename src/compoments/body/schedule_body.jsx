@@ -164,6 +164,7 @@ function ScheduleBody(props) {
       ></Header>
       <Spin spinning={loading}>
         <Gantt
+          extra={props.extra}
           query={query}
           showGantt={showGantt}
           tableData={tableData}
@@ -608,7 +609,12 @@ function makeGanttTableData(tableDataGroup, month, year) {
     .filter((data) => data.name && data.name != "None")
     .sort((l, r) => l.index - r.index)
     .forEach((data, index) => {
-      const result = { key: index, rowSpan: 1, missCol: [], dayCount: 0 };
+      const result = {
+        key: index,
+        rowSpan: 1,
+        missCol: [],
+        dayCount: 0,
+      };
       result.name = data.name;
       makeLine(data.dataList, result, month, year);
       if (result.miss) {
@@ -652,6 +658,8 @@ function makeLine(dataList, result, month, year) {
     memo.user = data.tester;
     memo.key = data.type;
     if (data.type && data.type == "dayoff") {
+      result.project = "休假";
+      result.jiraName = "休假";
       memo.type = "休假";
       memo.startTime = data.releaseDay.split(" ")[0];
       memo.days = end - start + 1;
@@ -681,6 +689,9 @@ function makeLine(dataList, result, month, year) {
     } else if (data.type == "local") {
       memo.type = "Local Test";
       memo.project = data.project;
+
+      result.project = data.project;
+      result.jiraName = data.jiraName;
       const prepareDayTime = data.prepareDayTime;
       const regressionTestDayTime = data.regressionTestDayTime;
       const testDay = data.testDay;

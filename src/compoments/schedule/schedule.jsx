@@ -94,6 +94,30 @@ function LTShceduleTab() {
                 fresh={props.fresh}
               ></LTReleaseTable>
             )}
+            extra={[
+              {
+                title: "Project#",
+                dataIndex: "project",
+                key: "project",
+                width: 100,
+                fixed: "left",
+                align: "center",
+                render: (text, record, index) => {
+                  return record.project;
+                },
+              },
+              {
+                title: "Jira#",
+                dataIndex: "jiraName",
+                key: "jiraName",
+                width: 100,
+                fixed: "left",
+                align: "center",
+                render: (text, record, index) => {
+                  return record.jiraName;
+                },
+              },
+            ]}
           ></ScheduleBody>
         );
       }}

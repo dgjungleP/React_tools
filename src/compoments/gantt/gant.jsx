@@ -27,7 +27,6 @@ import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
-import { func } from "prop-types";
 const { Panel } = Collapse;
 
 function Gantt(props) {
@@ -44,6 +43,7 @@ function Gantt(props) {
           year={year}
           month={month}
           simple={props.simple}
+          extra={props.extra}
         ></GanttTable>
       </div>
       {props.table(props)}
@@ -73,7 +73,7 @@ function GanttTable(props) {
     ...props.dataSource.filter((data) => (data.name || "").includes("*")),
     ...props.dataSource.filter((data) => !(data.name || "").includes("*")),
   ];
-
+  console.log(sourceData);
   const columns = [
     {
       title: "name",
@@ -85,6 +85,7 @@ function GanttTable(props) {
       render: formatName(),
       onCell: groupUser(),
     },
+    ...(props.extra || []),
   ];
   for (let i = 1; i <= getDays(year, month); i++) {
     const day = moment(year + "-" + month + "-" + i);
