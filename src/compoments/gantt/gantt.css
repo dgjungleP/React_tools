@@ -45,18 +45,18 @@
   background-color: brown;
 }
 .prepare-class {
-  background-color: red !important;
+  background-color: #b0e0e6 !important;
   font-weight: bold;
 }
 .test-class {
-  background-color: green !important;
+  background-color: #deb887 !important;
   font-weight: bold;
 }
 .testing-class {
-  background-color: blue !important;
+  background-color: #b0e0e6 !important;
   font-weight: bold;
 }
 .regressiontest-class {
-  background-color: orange !important;
+  background-color: #beeef4 !important;
   font-weight: bold;
 }
