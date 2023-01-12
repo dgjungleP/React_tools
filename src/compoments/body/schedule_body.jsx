@@ -66,7 +66,6 @@ function ScheduleBody(props) {
   const freshData = (query) => {
     updateLoading(true);
     query = query ? query : {};
-    console.log(query);
     if (check(query)) {
       query.system = systemConfig.systemName;
       query.queryLink = systemConfig.dataLink;
@@ -115,6 +114,7 @@ function ScheduleBody(props) {
             return otherJob;
           }
         );
+        newDayoffTableData = props.tryMergeDaoff(newDayoffTableData);
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);
@@ -713,25 +713,25 @@ function makeLine(dataList, result, month, year) {
         year
       );
       result[prepareStart.start] =
-        data.jiraName.replace("-", " ") +
+        " " +
         "-Prepare-" +
         (testStart.end - prepareStart.start) +
         "-&" +
         JSON.stringify(memo);
       result[testStart.end] =
-        data.jiraName.replace("-", " ") +
+        " " +
         "-Test-" +
         (testingStart.start + 1 - testStart.end) +
         "-&" +
         JSON.stringify(memo);
       result[testingStart.start + 1] =
-        data.jiraName.replace("-", " ") +
+        " " +
         "-Testing-" +
         (regressionTestStart.start - testingStart.start) +
         "-&" +
         JSON.stringify(memo);
       result[regressionTestStart.start + 1] =
-        data.jiraName.replace("-", " ") +
+        " " +
         "-RegressionTest-" +
         (regressionTestEnd.end - regressionTestStart.start) +
         "-&" +

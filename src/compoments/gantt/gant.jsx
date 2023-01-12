@@ -73,7 +73,6 @@ function GanttTable(props) {
     ...props.dataSource.filter((data) => (data.name || "").includes("*")),
     ...props.dataSource.filter((data) => !(data.name || "").includes("*")),
   ];
-  console.log(sourceData);
   const columns = [
     {
       title: "name",
@@ -312,9 +311,7 @@ function ReleaseTable(props) {
       tester: row.tester,
       system: systemConfig.systemName,
       systemId: systemConfig.id,
-    }).then((response) => {
-      console.log(response);
-    });
+    }).then((response) => {});
     updateData(newData);
   };
   return (
@@ -503,9 +500,7 @@ function LTReleaseTable(props) {
       tester: row.tester,
       system: systemConfig.systemName,
       systemId: systemConfig.id,
-    }).then((response) => {
-      console.log(response);
-    });
+    }).then((response) => {});
     updateData(newData);
   };
   return (

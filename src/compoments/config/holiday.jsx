@@ -109,9 +109,7 @@ function SpanWithSelect(props) {
   const changeUserInfo = (user, value) => {
     user.ascription = value;
 
-    updateUserInfo(user).then((res) => {
-      console.log(res);
-    });
+    updateUserInfo(user).then((res) => {});
   };
   return (
     <>
@@ -165,7 +163,6 @@ function Holiday(props) {
   };
   const handleOk = () => {
     setModalShow(false);
-    console.log(currentHoliday);
     setCurrentHoliday(currentHoliday);
     updateHoliday(currentHoliday).then((res) => {
       freshData();
