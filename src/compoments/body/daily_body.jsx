@@ -535,9 +535,7 @@ function OperateModal(props) {
     request.system = config.systemName;
     request.systemId = config.id;
 
-    setDaliy(request).then((response) => {
-      console.log(response);
-    });
+    setDaliy(request).then((response) => {});
     props.fresh();
     changeVisiable(false);
   };

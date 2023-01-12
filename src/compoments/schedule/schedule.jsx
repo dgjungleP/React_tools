@@ -55,6 +55,7 @@ function ShceduleTab() {
             groupData={(tableData, year, month, selectors) =>
               groupData(tableData, year, month, selectors)
             }
+            tryMergeDaoff={(data) => data}
             table={(props) => (
               <ReleaseTable
                 data={props.tableData}
@@ -84,6 +85,7 @@ function LTShceduleTab() {
             groupData={(tableData, year, month, selectors) =>
               groupLocalData(tableData, year, month, selectors)
             }
+            tryMergeDaoff={(data) => localTryMergeDayOff(data)}
             table={(props) => (
               <LTReleaseTable
                 data={props.tableData}
@@ -110,7 +112,7 @@ function LTShceduleTab() {
                 title: "Jira#",
                 dataIndex: "jiraName",
                 key: "jiraName",
-                width: 100,
+                width: 200,
                 fixed: "left",
                 align: "center",
                 render: (text, record, index) => {
@@ -124,6 +126,10 @@ function LTShceduleTab() {
       filter={(data) => data.config.localTest}
     ></SystemTab>
   );
+}
+function localTryMergeDayOff(data) {
+  console.log(data);
+  return data;
 }
 function DailyTab() {
   return (
@@ -280,6 +286,7 @@ function groupLocalData(tableData, year, month, selectors) {
     .filter((data) => data.tester && data.tester != "None" && data.type !== 'dayoff')
     .forEach((data) => {
       const item = { name: data.tester };
+      console.log(data);
       let tag = true;
       for (const resultItem of result) {
         if (resultItem.name == item.name) {
