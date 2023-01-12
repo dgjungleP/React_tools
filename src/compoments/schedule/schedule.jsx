@@ -262,7 +262,8 @@ function makeLocalData(json) {
 }
 function groupLocalData(tableData, year, month, selectors) {
   let count = selectors.length;
-  const result = selectors.map((data, index) => ({
+  // 非 dayoff
+  let result = selectors.map((data, index) => ({
     name: data,
     dataList: [],
     index: index,
@@ -276,7 +277,7 @@ function groupLocalData(tableData, year, month, selectors) {
     })
   );
   groupData
-    .filter((data) => data.tester && data.tester != "None")
+    .filter((data) => data.tester && data.tester != "None" && data.type !== 'dayoff')
     .forEach((data) => {
       const item = { name: data.tester };
       let tag = true;
@@ -298,14 +299,68 @@ function groupLocalData(tableData, year, month, selectors) {
         result.push(item);
       }
     });
-  for (const item of result) {
-    item.dataList.sort((l, r) => {
-      return l.testDay > r.testDay ? -1 : 1;
+  // dayoff
+  let dayOffNewArr = selectors.map((data, index) => ({
+    name: data,
+    dataList: [],
+    index: index,
+  }));
+  groupData
+    .filter((data) => data.tester && data.tester != "None" && data.type === 'dayoff')
+    .forEach((data) => {
+      const item = { name: data.tester };
+      let tag = true;
+      for (const resultItem of dayOffNewArr) {
+        if (resultItem.name == item.name) {
+          const timeWindow = resultItem.dataList.map((dataItem) => {
+            return getTime(dataItem, month, year);
+          });
+          const time = getTime(data, month, year);
+          if (
+            checkTime(timeWindow, time.start, time.end) ||
+            resultItem.dataList.length == 0
+          ) {
+            resultItem.dataList.push(data);
+            tag = false;
+            break;
+          }
+        }
+      }
+      let index = (
+        dayOffNewArr.find((data) => data.name == item.name) || { index: -1 }
+      ).index;
+      if (tag) {
+        item.dataList = [data];
+        item.index = index > 0 ? index : ++count;
+        dayOffNewArr.push(item);
+      }
     });
-  }
-  console.log(result);
-  return result;
+    // 两个数组合并，筛选出 name = none 的
+    let newResult = result.concat(dayOffNewArr.filter(val => val.dataList.length !== 0)).filter(item => item.name !== 'None')
+    for (const item of newResult) {
+      item.dataList.sort((l, r) => {
+        return l.testDay > r.testDay ? -1 : 1;
+      });
+    }
+    // 按照名字排序
+    newResult = newResult.sort(compare('name'))
+    newResult.forEach((item,index)=>item.index=index);
+  return newResult;
 }
+
+function compare (prop) {
+  return function (obj1, obj2) {
+      var val1 = obj1[prop];
+      var val2 = obj2[prop];if (val1 < val2) {
+          return -1;
+      } else if (val1 > val2) {
+          return 1;
+      } else {
+          return 0;
+      }            
+  } 
+}
+
 function getTime(dataItem, month, year) {
   let start = getDateNumber(dataItem.releaseDay);
   let end = getDateNumber(dataItem.launchDay);
