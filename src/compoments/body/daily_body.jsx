@@ -20,6 +20,7 @@ import {
   Switch,
   Button,
   notification,
+  message,
 } from "antd";
 import moment from "moment";
 import {
@@ -535,9 +536,11 @@ function OperateModal(props) {
     request.system = config.systemName;
     request.systemId = config.id;
 
-    setDaliy(request).then((response) => {});
-    props.fresh();
-    changeVisiable(false);
+    setDaliy(request).then((response) => {
+      props.fresh();
+      changeVisiable(false);
+      message.loading("Please wait for update!");
+    });
   };
   const handleCancel = () => {
     changeVisiable(false);
