@@ -128,7 +128,6 @@ function LTShceduleTab() {
   );
 }
 function localTryMergeDayOff(data) {
-  console.log(data);
   return data;
 }
 function DailyTab() {
@@ -286,7 +285,6 @@ function groupLocalData(tableData, year, month, selectors) {
     .filter((data) => data.tester && data.tester != "None" && data.type !== 'dayoff')
     .forEach((data) => {
       const item = { name: data.tester };
-      console.log(data);
       let tag = true;
       for (const resultItem of result) {
         if (resultItem.name == item.name) {

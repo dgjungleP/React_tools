@@ -584,7 +584,7 @@ function getLocalTime(starTime, endTime, month, year) {
   const endDate = moment([endYear, endMoth - 1]);
   let overload = false;
   if (startDate.isBefore(currentDate)) {
-    start = 0;
+    start = 1;
     overload = true;
   } else if (startDate.isAfter(currentDate)) {
     start = getDays(year, month) + 1;
@@ -594,13 +594,26 @@ function getLocalTime(starTime, endTime, month, year) {
     end = getDays(year, month) + 1;
     overload = true;
   } else if (endDate.isBefore(currentDate)) {
-    end = 0;
+    end = 1;
     overload = true;
   }
-  if (endMoth == parseInt(month) && endYear == parseInt(year)) {
-    overload = false;
-  }
+  // if (endMoth == parseInt(month) && endYear == parseInt(year)) {
+  //   overload = false;
+  // }
   return { start, end, overload };
+}
+
+function checkTimeInYearAndMonth(time,year,month){
+  let startMoth = getMothNumber(time);
+  let startYear = getYearNumber(time);
+  const currentDate = moment([year, month - 1]);
+  const startDate = moment([startYear, startMoth - 1]);
+
+  return {
+    before:startDate.isBefore(currentDate),
+    after:startDate.isAfter(currentDate),
+    same:startDate.isSame(currentDate),
+  }
 }
 
 function makeGanttTableData(tableDataGroup, month, year) {
@@ -712,51 +725,80 @@ function makeLine(dataList, result, month, year) {
         month,
         year
       );
-      result[prepareStart.start] =
+      let flag=false;
+      missCol = [];
+      if(prepareStart.start !==prepareStart.end){
+      result[prepareStart.start ] =
         " " +
         "-Prepare-" +
         (testStart.end - prepareStart.start) +
         "-&" +
         JSON.stringify(memo);
+        for (let i = prepareStart.start+ 1; i < testStart.end; i++) {
+          missCol.push(i);
+        }
+        flag=true;
+      }else{
+        flag=false;
+      }
+     
+      if(checkTimeInYearAndMonth(testDay,year,month).same &&( testStart.start !==testStart.end||!flag) ){
       result[testStart.end] =
         " " +
-        "-Test-" +
-        (testingStart.start + 1 - testStart.end) +
+        "-Test-1" +
         "-&" +
         JSON.stringify(memo);
-      result[testingStart.start + 1] =
+        flag=true;
+      }else{
+        flag=false;
+      }
+      
+      if(testingStart.start !==testingStart.end||!flag){
+      result[testingStart.start  +(flag? 1:0)] =
         " " +
         "-Testing-" +
-        (regressionTestStart.start - testingStart.start) +
+        (regressionTestStart.start+1 - (testingStart.start +(flag? 1:0))) +
         "-&" +
         JSON.stringify(memo);
-      result[regressionTestStart.start + 1] =
+        for (
+          let i =testingStart.start  +(flag? 1:0)+ 1;
+          i < regressionTestStart.start + 1;
+          i++
+        ) {
+          missCol.push(i);
+        }
+        flag=true;
+      }else{
+        flag=false;
+      }
+      
+      if(regressionTestStart.start !==regressionTestStart.end||!flag){
+      result[regressionTestStart.start +(flag? 1:0)] =
         " " +
         "-RegressionTest-" +
-        (regressionTestEnd.end - regressionTestStart.start) +
+        (regressionTestEnd.end+1 - (regressionTestStart.start +(flag? 1:0))) +
         "-&" +
         JSON.stringify(memo);
-      missCol = [];
-      for (let i = prepareStart.start + 1; i < testStart.end; i++) {
-        missCol.push(i);
+        if(regressionTestStart.start === regressionTestEnd.end) {
+          for (
+            let i = regressionTestStart.start + 1;
+            i < regressionTestEnd.end + 2;
+            i++
+          ) {
+            missCol.push(i);
+          }
+        } else {
+          for (
+            let i = regressionTestStart.start +(flag? 1:0) + 1;
+            i < regressionTestEnd.end + 1;
+            i++
+          ) {
+            missCol.push(i);
+          }
+        }
       }
-      for (let i = testStart.end + 1; i < testingStart.start + 1; i++) {
-        missCol.push(i);
-      }
-      for (
-        let i = testingStart.start + 2;
-        i < regressionTestStart.start + 1;
-        i++
-      ) {
-        missCol.push(i);
-      }
-      for (
-        let i = regressionTestStart.start + 2;
-        i < regressionTestEnd.end + 1;
-        i++
-      ) {
-        missCol.push(i);
-      }
+      // 当 regression 为 0 的时候
+     
       result.dayCount += prepareStart - regressionTestEnd + 1;
       const maxDay = getDays(year, month);
       result.miss =
