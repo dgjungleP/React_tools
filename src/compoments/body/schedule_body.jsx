@@ -779,6 +779,7 @@ function makeLine(dataList, result, month, year) {
         (regressionTestEnd.end+1 - (regressionTestStart.start +(flag? 1:0))) +
         "-&" +
         JSON.stringify(memo);
+        // 当 regression 为 0 的时候
         if(regressionTestStart.start === regressionTestEnd.end) {
           for (
             let i = regressionTestStart.start + 1;
@@ -797,9 +798,7 @@ function makeLine(dataList, result, month, year) {
           }
         }
       }
-      // 当 regression 为 0 的时候
-     
-      result.dayCount += prepareStart - regressionTestEnd + 1;
+      result.dayCount += regressionTestEnd.end-prepareStart.start    + 1;
       const maxDay = getDays(year, month);
       result.miss =
         (prepareStart.start > maxDay &&
