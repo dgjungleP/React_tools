@@ -127,6 +127,7 @@ function SpanWithSelect(props) {
                   style={{ width: 80 }}
                 >
                   <Option value="CD">CD</Option>
+                  <Option value="SH">SH</Option>
                   <Option value="TC">TC</Option>
                   <Option value="US">US</Option>
                 </Select>
