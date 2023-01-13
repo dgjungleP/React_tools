@@ -17,7 +17,7 @@ import {
 import "antd/dist/antd.css";
 import "./schedule_body.css";
 import { Gantt } from "../gantt/gant";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined } from "@ant-design/icons"; 
 import {
   getDayoff,
   getOtherJob,
