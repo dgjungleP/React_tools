@@ -283,6 +283,7 @@ function Holiday(props) {
               onChange={(value) => handleCHange({ ascription: value })}
             >
               <Option value="CD">CD</Option>
+              <Option value="SH">SH</Option>
               <Option value="TC">TC</Option>
               <Option value="US">US</Option>
             </Select>
