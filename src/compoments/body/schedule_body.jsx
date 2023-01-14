@@ -627,10 +627,10 @@ function makeGanttTableData(tableDataGroup, month, year) {
         rowSpan: 1,
         missCol: [],
         dayCount: 0,
-        name:data.name
+        name: data.name,
       };
       makeLine(data.dataList, result, month, year);
-      if (result.miss || result.overloadMiss) {
+      if (result.miss) {
         return;
       }
       if (
@@ -647,17 +647,7 @@ function makeGanttTableData(tableDataGroup, month, year) {
       }
       ganttTableData.push(result);
     });
-    tableDataGroup.forEach((data,index)=>{
-      if(ganttTableData.filter(check=>check.name === data.name).length<=0){
-        ganttTableData.push( {
-          key: index,
-          rowSpan: 1,
-          missCol: [],
-          dayCount: 0,
-          name:data.name 
-        })
-      }
-    })
+
   return ganttTableData;
 }
 
@@ -672,7 +662,7 @@ function getMothNumber(time) {
 }
 function makeLine(dataList, result, month, year) {
   dataList.forEach((data) => {
-    result.checkFlag=true;
+    result.checkFlag = true;
     let missCol = [];
     const { start, end, overload } = getTime(data, month, year);
     for (let i = start + 1; i < end; i++) {
@@ -740,8 +730,9 @@ function makeLine(dataList, result, month, year) {
       );
       let flag = false;
       missCol = [];
+      debugger;
       if (
-        checkTimeInYearAndMonth(testDay, year, month).same &&
+        // checkTimeInYearAndMonth(testDay, year, month).same &&
         prepareStart.start !== prepareStart.end
       ) {
         result[prepareStart.start] =
@@ -760,8 +751,9 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        checkTimeInYearAndMonth(testDay, year, month).same &&
-        (testStart.start !== testStart.end || !flag)
+        // checkTimeInYearAndMonth(testDay, year, month).same &&
+        testStart.start !== testStart.end ||
+        !flag
       ) {
         result[testStart.end] = " " + "-Test-1" + "-&" + JSON.stringify(memo);
         flag = true;
@@ -771,8 +763,9 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        checkTimeInYearAndMonth(testDay, year, month).same &&
-        (testingStart.start !== testingStart.end || !flag)
+        // checkTimeInYearAndMonth(testDay, year, month).same &&
+        testingStart.start !== testingStart.end ||
+        !flag
       ) {
         result[testingStart.start + (flag ? 1 : 0)] =
           " " +
@@ -796,8 +789,9 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        checkTimeInYearAndMonth(testDay, year, month).same &&
-        (regressionTestStart.start !== regressionTestStart.end || !flag)
+        // checkTimeInYearAndMonth(testDay, year, month).same &&
+        regressionTestStart.start !== regressionTestStart.end ||
+        !flag
       ) {
         result[regressionTestStart.start + (flag ? 1 : 0)] =
           " " +
@@ -829,18 +823,17 @@ function makeLine(dataList, result, month, year) {
       }
       result.dayCount += regressionTestEnd.end - prepareStart.start + 1;
       const maxDay = getDays(year, month);
-      if(result.overloadMiss){
-
-      result.miss =
-        (prepareStart.start > maxDay &&
-          testStart.end > maxDay &&
-          testingStart.start + 1 > maxDay &&
-          regressionTestStart.start + 1 > maxDay) ||
-        (prepareStart.start <= 0 &&
-          testStart.end <= 0 &&
-          testingStart.start + 1 <= 0 &&
-          regressionTestStart.start + 1 <= 0);
-        }
+      if (result.overloadMiss) {
+        result.miss =
+          (prepareStart.start > maxDay &&
+            testStart.end > maxDay &&
+            testingStart.start + 1 > maxDay &&
+            regressionTestStart.start + 1 > maxDay) ||
+          (prepareStart.start <= 0 &&
+            testStart.end <= 0 &&
+            testingStart.start + 1 <= 0 &&
+            regressionTestStart.start + 1 <= 0);
+      }
     } else {
       memo.type = "项目";
       memo.project = data.project;
