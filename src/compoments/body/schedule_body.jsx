@@ -730,10 +730,9 @@ function makeLine(dataList, result, month, year) {
       );
       let flag = false;
       missCol = [];
-      debugger;
       if (
-        // checkTimeInYearAndMonth(testDay, year, month).same &&
-        prepareStart.start !== prepareStart.end
+        checkTimeInYearAndMonth(prepareDayTime, year, month).same &&
+        data.prepareDay != 0
       ) {
         result[prepareStart.start] =
           " " +
@@ -750,11 +749,7 @@ function makeLine(dataList, result, month, year) {
         flag = false;
       }
 
-      if (
-        // checkTimeInYearAndMonth(testDay, year, month).same &&
-        testStart.start !== testStart.end ||
-        !flag
-      ) {
+      if (checkTimeInYearAndMonth(testDay, year, month).same) {
         result[testStart.end] = " " + "-Test-1" + "-&" + JSON.stringify(memo);
         flag = true;
         result.overloadMiss = false;
@@ -763,9 +758,8 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        // checkTimeInYearAndMonth(testDay, year, month).same &&
-        testingStart.start !== testingStart.end ||
-        !flag
+        checkTimeInYearAndMonth(testingDayTime, year, month).same &&
+        data.testingDay != 0
       ) {
         result[testingStart.start + (flag ? 1 : 0)] =
           " " +
@@ -789,9 +783,8 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        // checkTimeInYearAndMonth(testDay, year, month).same &&
-        regressionTestStart.start !== regressionTestStart.end ||
-        !flag
+        checkTimeInYearAndMonth(regressionTestDayTime, year, month).same &&
+        data.regressionTestDay != 0
       ) {
         result[regressionTestStart.start + (flag ? 1 : 0)] =
           " " +
@@ -834,6 +827,7 @@ function makeLine(dataList, result, month, year) {
             testingStart.start + 1 <= 0 &&
             regressionTestStart.start + 1 <= 0);
       }
+      console.log(result);
     } else {
       memo.type = "项目";
       memo.project = data.project;
