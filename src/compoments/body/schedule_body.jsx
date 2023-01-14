@@ -727,7 +727,7 @@ function makeLine(dataList, result, month, year) {
       );
       let flag=false;
       missCol = [];
-      if(prepareStart.start !==prepareStart.end){
+      if(checkTimeInYearAndMonth(testDay,year,month).same &&(prepareStart.start !==prepareStart.end)){
       result[prepareStart.start ] =
         " " +
         "-Prepare-" +
@@ -753,7 +753,7 @@ function makeLine(dataList, result, month, year) {
         flag=false;
       }
       
-      if(testingStart.start !==testingStart.end||!flag){
+      if(checkTimeInYearAndMonth(testDay,year,month).same&&(testingStart.start !==testingStart.end||!flag)){
       result[testingStart.start  +(flag? 1:0)] =
         " " +
         "-Testing-" +
@@ -772,7 +772,7 @@ function makeLine(dataList, result, month, year) {
         flag=false;
       }
       
-      if(regressionTestStart.start !==regressionTestStart.end||!flag){
+      if(checkTimeInYearAndMonth(testDay,year,month).same&&(regressionTestStart.start !==regressionTestStart.end||!flag)){
       result[regressionTestStart.start +(flag? 1:0)] =
         " " +
         "-RegressionTest-" +
