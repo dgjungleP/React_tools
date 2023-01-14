@@ -617,7 +617,7 @@ function checkTimeInYearAndMonth(time, year, month) {
 }
 
 function makeGanttTableData(tableDataGroup, month, year) {
-  const ganttTableData = [];
+  let ganttTableData = [];
   tableDataGroup
     .filter((data) => data.name && data.name != "None")
     .sort((l, r) => l.index - r.index)
@@ -627,10 +627,9 @@ function makeGanttTableData(tableDataGroup, month, year) {
         rowSpan: 1,
         missCol: [],
         dayCount: 0,
+        name:data.name
       };
-      result.name = data.name;
       makeLine(data.dataList, result, month, year);
-
       if (result.miss || result.overloadMiss) {
         return;
       }
@@ -648,6 +647,17 @@ function makeGanttTableData(tableDataGroup, month, year) {
       }
       ganttTableData.push(result);
     });
+    tableDataGroup.forEach((data,index)=>{
+      if(ganttTableData.filter(check=>check.name === data.name).length<=0){
+        ganttTableData.push( {
+          key: index,
+          rowSpan: 1,
+          missCol: [],
+          dayCount: 0,
+          name:data.name 
+        })
+      }
+    })
   return ganttTableData;
 }
 
@@ -662,6 +672,7 @@ function getMothNumber(time) {
 }
 function makeLine(dataList, result, month, year) {
   dataList.forEach((data) => {
+    result.checkFlag=true;
     let missCol = [];
     const { start, end, overload } = getTime(data, month, year);
     for (let i = start + 1; i < end; i++) {
@@ -818,6 +829,8 @@ function makeLine(dataList, result, month, year) {
       }
       result.dayCount += regressionTestEnd.end - prepareStart.start + 1;
       const maxDay = getDays(year, month);
+      if(result.overloadMiss){
+
       result.miss =
         (prepareStart.start > maxDay &&
           testStart.end > maxDay &&
@@ -827,6 +840,7 @@ function makeLine(dataList, result, month, year) {
           testStart.end <= 0 &&
           testingStart.start + 1 <= 0 &&
           regressionTestStart.start + 1 <= 0);
+        }
     } else {
       memo.type = "项目";
       memo.project = data.project;
