@@ -513,7 +513,7 @@ function LTReleaseTable(props) {
           dataSource={data}
         ></Table>
         <OperateModal
-          title={current.launchDay + "'s Project:" + current.project}
+          title={current.project + "#-" + current.jiraName + "#"}
           visible={modalVisiable}
           data={current}
           changeVisiable={setModalVisiable}
