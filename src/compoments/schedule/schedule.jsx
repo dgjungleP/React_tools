@@ -282,7 +282,9 @@ function groupLocalData(tableData, year, month, selectors) {
     })
   );
   groupData
-    .filter((data) => data.tester && data.tester != "None" && data.type !== 'dayoff')
+    .filter(
+      (data) => data.tester && data.tester != "None" && data.type !== "dayoff"
+    )
     .forEach((data) => {
       const item = { name: data.tester };
       let tag = true;
@@ -311,7 +313,9 @@ function groupLocalData(tableData, year, month, selectors) {
     index: index,
   }));
   groupData
-    .filter((data) => data.tester && data.tester != "None" && data.type === 'dayoff')
+    .filter(
+      (data) => data.tester && data.tester != "None" && data.type === "dayoff"
+    )
     .forEach((data) => {
       const item = { name: data.tester };
       let tag = true;
@@ -340,30 +344,32 @@ function groupLocalData(tableData, year, month, selectors) {
         dayOffNewArr.push(item);
       }
     });
-    // 两个数组合并，筛选出 name = none 的
-    let newResult = result.concat(dayOffNewArr.filter(val => val.dataList.length !== 0)).filter(item => item.name !== 'None')
-    for (const item of newResult) {
-      item.dataList.sort((l, r) => {
-        return l.testDay > r.testDay ? -1 : 1;
-      });
-    }
-    // 按照名字排序
-    newResult = newResult.sort(compare('name'))
-    newResult.forEach((item,index)=>item.index=index);
+  // 两个数组合并，筛选出 name = none 的
+  let newResult = (result || [])
+    .concat((dayOffNewArr || []).filter((val) => val.dataList.length !== 0))
+    .filter((item) => item.name !== "None");
+  for (const item of newResult) {
+    item.dataList.sort((l, r) => {
+      return l.testDay > r.testDay ? -1 : 1;
+    });
+  }
+  // 按照名字排序
+  newResult = newResult.sort(compare("name"));
   return newResult;
 }
 
-function compare (prop) {
+function compare(prop) {
   return function (obj1, obj2) {
-      var val1 = obj1[prop];
-      var val2 = obj2[prop];if (val1 < val2) {
-          return -1;
-      } else if (val1 > val2) {
-          return 1;
-      } else {
-          return 0;
-      }            
-  } 
+    var val1 = obj1[prop];
+    var val2 = obj2[prop];
+    if (val1 < val2) {
+      return -1;
+    } else if (val1 > val2) {
+      return 1;
+    } else {
+      return 0;
+    }
+  };
 }
 
 function getTime(dataItem, month, year) {

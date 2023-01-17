@@ -35,6 +35,7 @@ function Gantt(props) {
   const freshData = () => {
     props.updateData(props.tableData);
   };
+  console.log(props.ganttTableData);
   return (
     <>
       <div style={{ display: props.showGantt ? "" : "none" }}>

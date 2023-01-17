@@ -61,7 +61,6 @@ function ScheduleBody(props) {
       "month"
     );
     updateQuery(newQuery);
-    // freshData(newQuery);
   };
   const freshData = (query) => {
     updateLoading(true);
@@ -118,6 +117,7 @@ function ScheduleBody(props) {
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);
+        console.log(newTableData);
         const tableDataMerge = [
           ...newTableData,
           ...newDayoffTableData,
@@ -133,7 +133,9 @@ function ScheduleBody(props) {
           currentQuery.month,
           currentQuery.year
         );
+        updateganttTableData([]);
         updateganttTableData(newGanttData);
+        updateTableData([]);
         updateTableData(newTableData);
         updateLoading(false);
       })
@@ -647,7 +649,6 @@ function makeGanttTableData(tableDataGroup, month, year) {
       }
       ganttTableData.push(result);
     });
-
   return ganttTableData;
 }
 
@@ -731,7 +732,7 @@ function makeLine(dataList, result, month, year) {
       let flag = false;
       missCol = [];
       if (
-        checkTimeInYearAndMonth(prepareDayTime, year, month).same &&
+        // checkTimeInYearAndMonth(prepareDayTime, year, month).same &&
         data.prepareDay != 0
       ) {
         result[prepareStart.start] =
@@ -758,7 +759,7 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        checkTimeInYearAndMonth(testingDayTime, year, month).same &&
+        // checkTimeInYearAndMonth(testingDayTime, year, month).same &&
         data.testingDay != 0
       ) {
         result[testingStart.start + (flag ? 1 : 0)] =
@@ -783,7 +784,7 @@ function makeLine(dataList, result, month, year) {
       }
 
       if (
-        checkTimeInYearAndMonth(regressionTestDayTime, year, month).same &&
+        // checkTimeInYearAndMonth(regressionTestDayTime, year, month).same &&
         data.regressionTestDay != 0
       ) {
         result[regressionTestStart.start + (flag ? 1 : 0)] =
@@ -827,7 +828,6 @@ function makeLine(dataList, result, month, year) {
             testingStart.start + 1 <= 0 &&
             regressionTestStart.start + 1 <= 0);
       }
-      console.log(result);
     } else {
       memo.type = "项目";
       memo.project = data.project;
