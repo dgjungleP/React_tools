@@ -188,40 +188,44 @@ function groupData(tableData, year, month, selectors) {
       return newData;
     })
   );
-  groupData
-    .filter((data) => data.tester && data.tester != "None")
-    .forEach((data) => {
-      const item = { name: data.tester };
-      let tag = true;
-      for (const resultItem of result) {
-        if (resultItem.name == item.name) {
-          const timeWindow = resultItem.dataList.map((dataItem) => {
-            return getTime(dataItem, month, year);
-          });
-          const time = getTime(data, month, year);
-          if (
-            checkTime(timeWindow, time.start, time.end) ||
-            resultItem.dataList.length == 0
-          ) {
-            resultItem.dataList.push(data);
-            tag = false;
-            break;
+  try {
+    groupData
+      .filter((data) => data.tester && data.tester != "None")
+      .forEach((data) => {
+        const item = { name: data.tester };
+        let tag = true;
+        for (const resultItem of result) {
+          if (resultItem.name == item.name) {
+            const timeWindow = resultItem.dataList.map((dataItem) => {
+              return getTime(dataItem, month, year);
+            });
+            const time = getTime(data, month, year);
+            if (
+              checkTime(timeWindow, time.start, time.end) ||
+              resultItem.dataList.length == 0
+            ) {
+              resultItem.dataList.push(data);
+              tag = false;
+              break;
+            }
           }
         }
-      }
-      let index = (
-        result.find((data) => data.name == item.name) || { index: -1 }
-      ).index;
-      if (tag) {
-        item.dataList = [data];
-        item.index = index > 0 ? index : ++count;
-        result.push(item);
-      }
-    });
-  for (const item of result) {
-    item.dataList.sort((l, r) => {
-      return l.releaseDay > r.releaseDay ? -1 : 1;
-    });
+        let index = (
+          result.find((data) => data.name == item.name) || { index: -1 }
+        ).index;
+        if (tag) {
+          item.dataList = [data];
+          item.index = index > 0 ? index : ++count;
+          result.push(item);
+        }
+      });
+    for (const item of result) {
+      item.dataList.sort((l, r) => {
+        return l.releaseDay > r.releaseDay ? -1 : 1;
+      });
+    }
+  } catch (e) {
+    console.log(e);
   }
   return result;
 }
@@ -418,5 +422,10 @@ function getYearNumber(time) {
 }
 function getMothNumber(time) {
   return parseInt(time.split("-")[1]);
+}
+function getDays(year, month) {
+  month = parseInt(month, 10);
+  var d = new Date(year, month, 0);
+  return d.getDate();
 }
 export { ShceduleTab, DailyTab, LTShceduleTab };
