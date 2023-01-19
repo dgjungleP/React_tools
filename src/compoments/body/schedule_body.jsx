@@ -806,6 +806,7 @@ function makeLine(dataList, result, month, year) {
           ) {
             missCol.push(i);
           }
+
           result.overloadMiss = false;
         } else {
           for (
