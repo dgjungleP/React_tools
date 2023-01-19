@@ -248,7 +248,7 @@ function CurrentBody(props) {
       onCell: (record) => {
         return {
           record,
-          editable: col.editable,
+          editable: record.id,
           dataIndex: col.dataIndex,
           title: col.title,
           handleSave: handleSave,
