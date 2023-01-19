@@ -690,6 +690,8 @@ function makeLine(dataList, result, month, year) {
       }
     } else if (data.type == "otherJob") {
       memo.type = "其他";
+      result.project = data.project;
+      result.jiraName = "N/A";
       memo.startTime = data.releaseDay.split(" ")[0];
       memo.endTime = data.launchDay.split(" ")[0];
       memo.jobName = data.jobName;
@@ -815,7 +817,7 @@ function makeLine(dataList, result, month, year) {
           }
         }
       }
-      result.dayCount += regressionTestEnd.end - prepareStart.start + 1;
+      result.dayCount += testingStart.end - prepareStart.start + 1;
       const maxDay = getDays(year, month);
       if (result.overloadMiss) {
         result.miss =

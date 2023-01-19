@@ -53,17 +53,27 @@ function deleteDayoff(requst) {
 function getDailys(request) {
   return axios.post(`${baseApi}dailys`, request);
 }
-function getHoliday(request) {
-  return axios.get(`${baseApi}holiday`);
-}
+
 function getUserInfo(request) {
   return axios.get(`${baseApi}user-info?systemId=${request}`);
+}
+function getHoliday(request) {
+  return axios.get(`${baseApi}holiday`);
 }
 function updateHoliday(request) {
   return axios.post(`${baseApi}holiday`, request);
 }
 function deleteHoliday(request) {
   return axios.delete(`${baseApi}holiday?id=${request}`);
+}
+function getCompensatory(request) {
+  return axios.get(`${baseApi}compensatory`);
+}
+function updateCompensatory(request) {
+  return axios.post(`${baseApi}compensatory`, request);
+}
+function deleteCompensatory(request) {
+  return axios.delete(`${baseApi}compensatory?id=${request}`);
 }
 function updateUserInfo(request) {
   return axios.post(`${baseApi}user-info`, request);
@@ -75,6 +85,9 @@ function freshServiceCache() {
   return axios.get(`${baseApi}fresh`);
 }
 export {
+  getCompensatory,
+  updateCompensatory,
+  deleteCompensatory,
   getProject,
   setTester,
   updateSystemConfig,

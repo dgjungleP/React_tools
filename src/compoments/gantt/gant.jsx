@@ -893,7 +893,9 @@ function colorCell(i, day, simple) {
     // if (checkWeekendDay(weekNumber, simple)) {
     //   className += " weekenday-class ";
     // }
-    if (moment().date() == i && moment().month() == day.month()) {
+
+    const now = moment();
+    if (now.date() == i && now.month() == day.month()) {
       className += " today-class";
     }
     if (record.missCol.findIndex((data) => data === i) < 0) {
@@ -918,9 +920,11 @@ function colorHeaderCell(i, day, simple) {
     if (checkWeekendDay(weekNumber, simple)) {
       className += " weekenday-header-class ";
     }
-    if (moment().date() == i) {
+    const now = moment();
+    if (now.date() == i && now.month() == day.month()) {
       className += " today-header-class";
     }
+
     result.className = className;
     return result;
   };

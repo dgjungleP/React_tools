@@ -80,6 +80,7 @@ function LTShceduleTab() {
           <ScheduleBody
             systemConfig={system.config}
             needDayOff={true}
+            needOtherJob={true}
             getProject={(query) => getLocalShcedule(query)}
             makeData={(data) => makeLocalData(data)}
             groupData={(tableData, year, month, selectors) =>

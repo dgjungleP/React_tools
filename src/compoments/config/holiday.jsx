@@ -9,6 +9,9 @@ import {
   updateHoliday,
   updateUserInfo,
   deleteHoliday,
+  deleteCompensatory,
+  updateCompensatory,
+  getCompensatory,
 } from "../../server/project-service";
 import {
   Button,
@@ -22,11 +25,13 @@ import {
   Select,
   Spin,
   Tabs,
+  Collapse,
 } from "antd";
 import Modal from "antd/lib/modal/Modal";
 import Input from "antd/lib/input/Input";
 import moment from "moment";
 
+const { Panel } = Collapse;
 const { Option } = Select;
 function HolidayConfig(props) {
   const [systemConfig, setSystemConfig] = useState([]);
@@ -39,6 +44,7 @@ function HolidayConfig(props) {
     <>
       <Ascription config={systemConfig}></Ascription>
       <Holiday></Holiday>
+      <Compensatory></Compensatory>
     </>
   );
 }
@@ -68,38 +74,47 @@ function Ascription(props) {
   };
   return (
     <>
-      <PageHeader
-        className="site-page-header"
-        title="Ascription"
-        subTitle="Manage your Place of ownership"
-      ></PageHeader>
-      <Spin spinning={loading}>
-        <Tabs
-          type="card"
-          onChange={changeTab}
-          style={{ backgroundColor: "white" }}
-          items={config.map((system) => {
-            return {
-              label: system.systemName,
-              key: system.id,
-              children: (
-                <Row gutter={16}>
-                  {userInfo
-                    .filter((data) => data.system == system.id)
-                    .map((data) => {
-                      return (
-                        <SpanWithSelect
-                          key={data.system}
-                          userInfo={data.data}
-                        ></SpanWithSelect>
-                      );
-                    })}
-                </Row>
-              ),
-            };
-          })}
-        ></Tabs>
-      </Spin>
+      <Collapse defaultValue={["1"]}>
+        <Panel
+          header={
+            <PageHeader
+              className="site-page-header"
+              title="Ascription"
+              subTitle="Manage your Place of ownership"
+            ></PageHeader>
+          }
+          showArrow={false}
+          key={1}
+        >
+          <Spin spinning={loading}>
+            <Tabs
+              type="card"
+              onChange={changeTab}
+              style={{ backgroundColor: "white" }}
+              items={config.map((system) => {
+                return {
+                  label: system.systemName,
+                  key: system.id,
+                  children: (
+                    <Row gutter={16}>
+                      {userInfo
+                        .filter((data) => data.system == system.id)
+                        .map((data) => {
+                          return (
+                            <SpanWithSelect
+                              key={data.system}
+                              userInfo={data.data}
+                            ></SpanWithSelect>
+                          );
+                        })}
+                    </Row>
+                  ),
+                };
+              })}
+            ></Tabs>
+          </Spin>
+        </Panel>
+      </Collapse>
     </>
   );
 }
@@ -173,61 +188,84 @@ function Holiday(props) {
     setModalShow(false);
     setCurrentHoliday({});
   };
-  const handleCHange = (value) => {
+  const handleCange = (value) => {
     const newHolidayIngfo = { ...currentHoliday, ...value };
     setCurrentHoliday(newHolidayIngfo);
   };
   useEffect(() => {
     freshData();
   }, [currentHoliday]);
+
   return (
     <>
-      <PageHeader
-        className="site-page-header"
-        title="Holiday"
-        subTitle="Manage Holiday"
-        extra={[
-          <Button onClick={() => editHoliday({})} key="1" ghost type="primary">
-            New
-          </Button>,
-        ]}
-      ></PageHeader>
-      <Spin spinning={loading}>
-        <List
-          style={{ backgroundColor: "white" }}
-          dataSource={holidayList}
-          renderItem={(item) => {
-            return (
-              <List.Item
-                actions={[
-                  <a key="list-loadmore-edit" onClick={() => editHoliday(item)}>
-                    edit
-                  </a>,
-                  <a
-                    key="list-loadmore-edit"
-                    onClick={() => handleDeleteHoliday(item)}
-                    style={{ color: "red" }}
+      <Collapse defaultValue={["1"]}>
+        <Panel
+          header={
+            <PageHeader
+              className="site-page-header"
+              title="Holiday"
+              subTitle="Manage Holiday"
+              extra={[
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editHoliday({});
+                  }}
+                  key="1"
+                  ghost
+                  type="primary"
+                  style={{ zIndex: 999 }}
+                >
+                  New
+                </Button>,
+              ]}
+            ></PageHeader>
+          }
+          showArrow={false}
+          key={1}
+        >
+          <Spin spinning={loading}>
+            <List
+              style={{ backgroundColor: "white" }}
+              dataSource={holidayList}
+              renderItem={(item) => {
+                return (
+                  <List.Item
+                    actions={[
+                      <a
+                        key="list-loadmore-edit"
+                        onClick={() => editHoliday(item)}
+                      >
+                        edit
+                      </a>,
+                      <a
+                        key="list-loadmore-edit"
+                        onClick={() => handleDeleteHoliday(item)}
+                        style={{ color: "red" }}
+                      >
+                        delete
+                      </a>,
+                    ]}
                   >
-                    delete
-                  </a>,
-                ]}
-              >
-                <Descriptions title={item.name} style={{ paddingLeft: 16 }}>
-                  <Descriptions.Item label="Date">
-                    {moment(item.dateInfo).format("MM-DD")}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Duration">
-                    {item.duration}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Ascription">
-                    {item.ascription}
-                  </Descriptions.Item>
-                </Descriptions>
-              </List.Item>
-            );
-          }}
-        ></List>
-      </Spin>
+                    <Descriptions title={item.name} style={{ paddingLeft: 16 }}>
+                      <Descriptions.Item label="Date">
+                        {moment(item.dateInfo).format("MM-DD")}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Duration">
+                        {item.duration}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Ascription">
+                        {item.ascription}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </List.Item>
+                );
+              }}
+            ></List>
+          </Spin>
+        </Panel>
+      </Collapse>
+
       <Modal
         open={modalShow}
         title="Holiday"
@@ -241,7 +279,7 @@ function Holiday(props) {
           <Col>
             <Input
               value={currentHoliday.name}
-              onChange={(value) => handleCHange({ name: value.target.value })}
+              onChange={(value) => handleCange({ name: value.target.value })}
             ></Input>
           </Col>
         </Row>
@@ -256,7 +294,7 @@ function Holiday(props) {
               }
               format={"MM-DD"}
               onChange={(value) =>
-                handleCHange({ dateInfo: value.format("yyyy-MM-DD") })
+                handleCange({ dateInfo: value.format("yyyy-MM-DD") })
               }
             ></DatePicker>
           </Col>
@@ -268,7 +306,7 @@ function Holiday(props) {
           <Col>
             <InputNumber
               value={currentHoliday.duration}
-              onChange={(value) => handleCHange({ duration: value })}
+              onChange={(value) => handleCange({ duration: value })}
             ></InputNumber>
           </Col>
         </Row>
@@ -280,7 +318,172 @@ function Holiday(props) {
             <Select
               value={currentHoliday.ascription}
               style={{ width: 80 }}
-              onChange={(value) => handleCHange({ ascription: value })}
+              onChange={(value) => handleCange({ ascription: value })}
+            >
+              <Option value="CD">CD</Option>
+              <Option value="SH">SH</Option>
+              <Option value="TC">TC</Option>
+              <Option value="US">US</Option>
+            </Select>
+          </Col>
+        </Row>
+      </Modal>
+    </>
+  );
+}
+function Compensatory(props) {
+  const [loading, setLoading] = useState();
+  const [compensatoryList, setCompensatoryList] = useState([]);
+  const [currentCompensatory, setCurrentCompensatory] = useState({});
+  const [modalShow, setModalShow] = useState();
+  const freshData = () => {
+    setLoading(true);
+    getCompensatory().then((res) => {
+      setCompensatoryList(res.data);
+      setLoading(false);
+    });
+  };
+  const editCompensatory = (holiday) => {
+    setCurrentCompensatory(holiday);
+    setModalShow(true);
+  };
+  const handleDeleteCompensatory = (holiday) => {
+    setLoading(true);
+    deleteCompensatory(holiday.id).then((res) => {
+      freshData();
+    });
+  };
+  const handleOk = () => {
+    setModalShow(false);
+    setCurrentCompensatory(currentCompensatory);
+    updateCompensatory(currentCompensatory).then((res) => {
+      freshData();
+    });
+  };
+  const handleCancel = () => {
+    setModalShow(false);
+    setCurrentCompensatory({});
+  };
+  const handleCange = (value) => {
+    const newCompensatoryIngfo = { ...currentCompensatory, ...value };
+    setCurrentCompensatory(newCompensatoryIngfo);
+  };
+  useEffect(() => {
+    freshData();
+  }, [currentCompensatory]);
+  return (
+    <>
+      <Collapse defaultValue={["1"]}>
+        <Panel
+          header={
+            <PageHeader
+              className="site-page-header"
+              title="Compensatory"
+              subTitle="Manage Compensatory"
+              extra={[
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editCompensatory({});
+                  }}
+                  key="1"
+                  ghost
+                  type="primary"
+                >
+                  New
+                </Button>,
+              ]}
+            ></PageHeader>
+          }
+          showArrow={false}
+          key={1}
+        >
+          <Spin spinning={loading}>
+            <List
+              style={{ backgroundColor: "white" }}
+              dataSource={compensatoryList}
+              renderItem={(item) => {
+                return (
+                  <List.Item
+                    actions={[
+                      <a
+                        key="list-loadmore-edit"
+                        onClick={() => editCompensatory(item)}
+                      >
+                        edit
+                      </a>,
+                      <a
+                        key="list-loadmore-edit"
+                        onClick={() => handleDeleteCompensatory(item)}
+                        style={{ color: "red" }}
+                      >
+                        delete
+                      </a>,
+                    ]}
+                  >
+                    <Descriptions title={item.name} style={{ paddingLeft: 16 }}>
+                      <Descriptions.Item label="Date">
+                        {moment(item.dateInfo).format("MM-DD")}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Duration">
+                        {item.duration}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Ascription">
+                        {item.ascription}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </List.Item>
+                );
+              }}
+            ></List>
+          </Spin>
+        </Panel>
+      </Collapse>
+
+      <Modal
+        open={modalShow}
+        title="Compensatory"
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <Row gutter={16} align="middle">
+          <Col span={6} style={{ display: "flex", justifyContent: "end" }}>
+            <span>Name</span>:
+          </Col>
+          <Col>
+            <Input
+              value={currentCompensatory.name}
+              onChange={(value) => handleCange({ name: value.target.value })}
+            ></Input>
+          </Col>
+        </Row>
+        <Row gutter={16} align="middle">
+          <Col span={6} style={{ display: "flex", justifyContent: "end" }}>
+            <span>Date</span>:
+          </Col>
+          <Col>
+            <DatePicker
+              value={
+                currentCompensatory.dateInfo
+                  ? moment(currentCompensatory.dateInfo)
+                  : null
+              }
+              format={"MM-DD"}
+              onChange={(value) =>
+                handleCange({ dateInfo: value.format("yyyy-MM-DD") })
+              }
+            ></DatePicker>
+          </Col>
+        </Row>
+        <Row gutter={16} align="middle">
+          <Col span={6} style={{ display: "flex", justifyContent: "end" }}>
+            <span>Ascription</span>:
+          </Col>
+          <Col>
+            <Select
+              value={currentCompensatory.ascription}
+              style={{ width: 80 }}
+              onChange={(value) => handleCange({ ascription: value })}
             >
               <Option value="CD">CD</Option>
               <Option value="SH">SH</Option>
