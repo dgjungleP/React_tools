@@ -425,9 +425,6 @@ function Compensatory(props) {
                       <Descriptions.Item label="Date">
                         {moment(item.dateInfo).format("MM-DD")}
                       </Descriptions.Item>
-                      <Descriptions.Item label="Duration">
-                        {item.duration}
-                      </Descriptions.Item>
                       <Descriptions.Item label="Ascription">
                         {item.ascription}
                       </Descriptions.Item>

@@ -705,6 +705,24 @@ function OperateModal(props) {
   const handleCancel = () => {
     changeVisiable(false);
   };
+  const tryCalculate = () => {
+    if (!form.getFieldValue("localTester") || !form.getFieldValue("testDay")) {
+      return;
+    }
+    const launchDay = moment(currentData.launchDay);
+    const releaseDay = moment(currentData.releaseDay);
+    const testDay = moment(form.getFieldValue("testDay"));
+
+    if (form.getFieldValue("testingTime") == 0) {
+      form.setFieldValue("testingTime", releaseDay.diff(testDay, "days"));
+    }
+    if (form.getFieldValue("regressionTestTime") == 0) {
+      form.setFieldValue(
+        "regressionTestTime",
+        launchDay.diff(releaseDay, "days")
+      );
+    }
+  };
   useEffect(() => {
     const currentData = { ...data };
     currentData.localTester = currentData.localTester
@@ -736,14 +754,14 @@ function OperateModal(props) {
           <InputNumber></InputNumber>
         </Form.Item>
         <Form.Item label={"Local Testster:"} name={"localTester"}>
-          <Select mode="multiple">
+          <Select mode="multiple" onChange={tryCalculate}>
             {config.testerList.map((user) => {
               return <Select.Option key={user}>{user}</Select.Option>;
             })}
           </Select>
         </Form.Item>
         <Form.Item label={"Test Day:"} name={"testDay"}>
-          <DatePicker></DatePicker>
+          <DatePicker onChange={tryCalculate}></DatePicker>
         </Form.Item>
       </Form>
     </Modal>
