@@ -117,7 +117,6 @@ function ScheduleBody(props) {
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);
-        console.log(newTableData);
         const tableDataMerge = [
           ...newTableData,
           ...newDayoffTableData,
@@ -689,6 +688,7 @@ function makeLine(dataList, result, month, year) {
         missCol.push(end);
       }
     } else if (data.type == "otherJob") {
+      debugger;
       memo.type = "其他";
       result.project = data.project;
       result.jiraName = "N/A";
@@ -696,7 +696,7 @@ function makeLine(dataList, result, month, year) {
       memo.endTime = data.launchDay.split(" ")[0];
       memo.jobName = data.jobName;
       result[start] =
-        data.project +
+        (data.project || "").replaceAll("-", "_") +
         "-JobTime-" +
         (end - start + (overload ? 0 : 1)) +
         "-&" +
