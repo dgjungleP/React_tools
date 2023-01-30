@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "antd/dist/antd.css";
 import "./schedule.css";
 import { ScheduleBody } from "../body/schedule_body";
-import { Layout, Tabs } from "antd";
+import { Layout, Tabs, Col, Row, Tooltip } from "antd";
 import {
   getSystemConfig,
   getProject,
@@ -106,7 +106,29 @@ function LTShceduleTab() {
                 fixed: "left",
                 align: "center",
                 render: (text, record, index) => {
-                  return record.project;
+                  console.log(record);
+                  let bodyTemp = (
+                    <>
+                      <Row>
+                        <span>Project: {record.project}</span>
+                      </Row>
+                      <Row>
+                        <span>LaunchDate: {record.launchDate}</span>
+                      </Row>
+                      <Row>
+                        <span>ReleaseDate: {record.releaseDate}</span>
+                      </Row>
+                    </>
+                  );
+                  return (
+                    <Tooltip
+                      title={() => {
+                        return <Col>{bodyTemp}</Col>;
+                      }}
+                    >
+                      {record.project}
+                    </Tooltip>
+                  );
                 },
               },
               {
@@ -143,7 +165,6 @@ function DailyTab() {
 }
 function makeData(json) {
   const result = [];
-  let count = 0;
   try {
     for (const item of json) {
       const base = {};

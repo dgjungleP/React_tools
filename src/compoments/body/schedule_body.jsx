@@ -710,6 +710,9 @@ function makeLine(dataList, result, month, year) {
 
       result.project = data.project;
       result.jiraName = data.jiraName;
+      result.releaseDate = data.releaseDay;
+      result.launchDate = data.launchDay;
+
       result.overloadMiss = true;
       const prepareDayTime = data.prepareDayTime;
       const regressionTestDayTime = data.regressionTestDayTime;
@@ -733,10 +736,7 @@ function makeLine(dataList, result, month, year) {
       );
       let flag = false;
       missCol = [];
-      if (
-        // checkTimeInYearAndMonth(prepareDayTime, year, month).same &&
-        data.prepareDay != 0
-      ) {
+      if (data.prepareDay != 0) {
         result[prepareStart.start] =
           " " +
           "-Prepare-" +
@@ -760,10 +760,7 @@ function makeLine(dataList, result, month, year) {
         flag = false;
       }
 
-      if (
-        // checkTimeInYearAndMonth(testingDayTime, year, month).same &&
-        data.testingDay != 0
-      ) {
+      if (data.testingDay != 0) {
         result[testingStart.start + (flag ? 1 : 0)] =
           " " +
           "-Testing-" +
@@ -785,10 +782,7 @@ function makeLine(dataList, result, month, year) {
         flag = false;
       }
 
-      if (
-        // checkTimeInYearAndMonth(regressionTestDayTime, year, month).same &&
-        data.regressionTestDay != 0
-      ) {
+      if (data.regressionTestDay != 0) {
         result[
           regressionTestStart.start +
             (flag ? 1 : 0) +
