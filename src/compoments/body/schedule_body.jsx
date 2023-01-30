@@ -789,12 +789,18 @@ function makeLine(dataList, result, month, year) {
         // checkTimeInYearAndMonth(regressionTestDayTime, year, month).same &&
         data.regressionTestDay != 0
       ) {
-        result[regressionTestStart.start + (flag ? 1 : 0)] =
+        result[
+          regressionTestStart.start +
+            (flag ? 1 : 0) +
+            (data.testingDay == 0 ? 1 : 0)
+        ] =
           " " +
           "-RegressionTest-" +
           (regressionTestEnd.end +
             1 -
-            (regressionTestStart.start + (flag ? 1 : 0))) +
+            (regressionTestStart.start +
+              (flag ? 1 : 0) +
+              (data.testingDay == 0 ? 1 : 0))) +
           "-&" +
           JSON.stringify(memo);
         // 当 regression 为 0 的时候
@@ -810,7 +816,11 @@ function makeLine(dataList, result, month, year) {
           result.overloadMiss = false;
         } else {
           for (
-            let i = regressionTestStart.start + (flag ? 1 : 0) + 1;
+            let i =
+              regressionTestStart.start +
+              (flag ? 1 : 0) +
+              (data.testingDay == 0 ? 1 : 0) +
+              1;
             i < regressionTestEnd.end + 1;
             i++
           ) {
