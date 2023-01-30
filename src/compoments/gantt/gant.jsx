@@ -179,6 +179,9 @@ function ReleaseTable(props) {
   const statusSelectors = Array.from(
     new Set(data.map((inner) => inner.status))
   );
+  const domainSelectors = Array.from(
+    new Set(data.map((inner) => inner.domain))
+  ).filter((data) => data);
   const firstCol = {
     title: !systemConfig.needDivision ? "Group" : "Division",
     key: !systemConfig.needDivision ? "group" : "division",
@@ -196,6 +199,14 @@ function ReleaseTable(props) {
   };
   const baseColumns = [
     firstCol,
+    {
+      title: "Domain",
+      key: "domain",
+      dataIndex: "domain",
+      filters: makeFilter(domainSelectors),
+      onFilter: (value, record) => record["domain"].indexOf(value) === 0,
+      filterSearch: true,
+    },
     {
       title: "Project",
       key: "Project",

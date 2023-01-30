@@ -164,6 +164,7 @@ function makeData(json) {
         Math.random(100);
       base.group = item.group;
       base.division = item.division;
+      base.domain = item.domain;
       base.usedTime = item.usedTime;
       base.actuallyDoneTime = item.actuallyDoneTime;
       result.push(base);
