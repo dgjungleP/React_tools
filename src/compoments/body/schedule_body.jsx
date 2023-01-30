@@ -712,7 +712,7 @@ function makeLine(dataList, result, month, year) {
       result.jiraName = data.jiraName;
       result.releaseDate = data.releaseDay;
       result.launchDate = data.launchDay;
-
+      result.needToolTip = true;
       result.overloadMiss = true;
       const prepareDayTime = data.prepareDayTime;
       const regressionTestDayTime = data.regressionTestDayTime;

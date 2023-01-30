@@ -107,16 +107,19 @@ function LTShceduleTab() {
                 align: "center",
                 render: (text, record, index) => {
                   console.log(record);
+                  if (!record.needToolTip) {
+                    return <>{record.project}</>;
+                  }
                   let bodyTemp = (
                     <>
                       <Row>
                         <span>Project: {record.project}</span>
                       </Row>
                       <Row>
-                        <span>LaunchDate: {record.launchDate}</span>
+                        <span>ReleaseDate: {record.releaseDate}</span>
                       </Row>
                       <Row>
-                        <span>ReleaseDate: {record.releaseDate}</span>
+                        <span>LaunchDate: {record.launchDate}</span>
                       </Row>
                     </>
                   );
