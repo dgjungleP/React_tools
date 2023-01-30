@@ -106,7 +106,6 @@ function LTShceduleTab() {
                 fixed: "left",
                 align: "center",
                 render: (text, record, index) => {
-                  console.log(record);
                   if (!record.needToolTip) {
                     return <>{record.project}</>;
                   }
@@ -168,6 +167,7 @@ function DailyTab() {
 }
 function makeData(json) {
   const result = [];
+  let count;
   try {
     for (const item of json) {
       const base = {};
