@@ -842,6 +842,8 @@ function makeLine(dataList, result, month, year) {
       memo.endTime = data.launchDay;
       memo.usedTime = data.usedTime;
       memo.actuallyDoneTime = data.actuallyDoneTime || "";
+      memo.autoTestTag = data.autoTestTag;
+
       result[start] =
         data.project +
         "-Release-" +

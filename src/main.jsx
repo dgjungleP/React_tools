@@ -39,7 +39,7 @@ function MyMenus(props) {
       icon: <PieChartOutlined />,
     },
     {
-      label: <Link to="/daily">Daily Launch</Link>,
+      label: <Link to="/daily">Daily Launch </Link>,
       key: "daily",
       icon: <CalendarOutlined />,
     },

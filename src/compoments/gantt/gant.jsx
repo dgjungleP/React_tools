@@ -100,7 +100,7 @@ function GanttTable(props) {
       },
       dataIndex: day,
       key: day,
-      width: 60,
+      width: 90,
       align: "center",
       render: formatter(i),
       onCell: colorCell(i, day, simple),
@@ -128,6 +128,7 @@ function ReleaseTable(props) {
   const systemConfig = props.systemConfig;
   const [searchText, updateSearchText] = useState("");
   const [searchedColumn, updateSearchedColumn] = useState("");
+  const autoTetingTag = ["None", "Plan", "Doing", "Done"];
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -260,6 +261,41 @@ function ReleaseTable(props) {
       filters: makeFilter(props.selectors),
       onFilter: (value, record) => record.tester.indexOf(value) === 0,
       filterSearch: true,
+      onCell: (record) => {
+        return {
+          record,
+          editable: true,
+          dataIndex: "tester",
+          title: "Tester",
+          handleSave: handleSave,
+          selectors: props.selectors,
+          type: "multiple",
+        };
+      },
+    },
+    {
+      title: "AutoTestingTag",
+      key: "AutoTestingTag",
+      dataIndex: "autoTestTag",
+      editable: true,
+      sorter: {
+        compare: (a, b) => {
+          return a.autoTestTag > b.autoTestTag ? -1 : 1;
+        },
+      },
+      filters: makeFilter(autoTetingTag),
+      onFilter: (value, record) => record.autoTestTag == value,
+      filterSearch: true,
+      onCell: (record) => {
+        return {
+          record,
+          editable: true,
+          dataIndex: "autoTestTag",
+          title: "AutoTestingTag",
+          handleSave: handleSave,
+          selectors: autoTetingTag,
+        };
+      },
     },
     {
       title: "ReleaseDay",
@@ -288,31 +324,35 @@ function ReleaseTable(props) {
       cell: EditableCell,
     },
   };
-  const columns = baseColumns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-    return {
-      ...col,
-      onCell: (record) => {
-        return {
-          record,
-          editable: col.editable,
-          dataIndex: col.dataIndex,
-          title: col.title,
-          handleSave: handleSave,
-          selectors: props.selectors,
-          type: "multiple",
-        };
-      },
-    };
-  });
+  const columns = baseColumns;
+  // const columns = baseColumns.map((col) => {
+  //   if (!col.editable) {
+  //     return col;
+  //   }
+  //   return {
+  //     ...col,
+  //     onCell: (record) => {
+  //       return {
+  //         record,
+  //         editable: col.editable,
+  //         dataIndex: col.dataIndex,
+  //         title: col.title,
+  //         handleSave: handleSave,
+  //         selectors: props.selectors,
+  //         type: "multiple",
+  //       };
+  //     },
+  //   };
+  // });
 
   const updateData = (newData) => {
     props.updateData(newData);
   };
   const handleSave = (row) => {
-    row.tester = (row.tester || []).join(",");
+    console.log(row);
+    if (Array.isArray(row.tester)) {
+      row.tester = (row.tester || []).join(",");
+    }
     const newData = [...data];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
@@ -320,10 +360,12 @@ function ReleaseTable(props) {
     setTester({
       projectId: row.project,
       tester: row.tester,
+      autoTestTag: row.autoTestTag,
       system: systemConfig.systemName,
       systemId: systemConfig.id,
-    }).then((response) => {});
-    updateData(newData);
+    }).then((response) => {
+      updateData(newData);
+    });
   };
   return (
     <>
@@ -823,10 +865,12 @@ function groupUser() {
 function formatter(i) {
   return (text, record, index) => {
     let title = {};
+    let tag;
     if (record[i]) {
       let memo = record[i].split("-&")[1];
       memo = (memo || "{}").replace('/\\"/g', '"');
       title = JSON.parse(memo);
+      tag = title.autoTestTag;
     }
     let bodyTemp;
     if (title.key == "otherJob") {
@@ -881,10 +925,12 @@ function formatter(i) {
           <Row>
             <span>Used Time: {title.usedTime}</span>
           </Row>
+          <Row>
+            <span>AutoTestingTag: {title.autoTestTag}</span>
+          </Row>
         </>
       );
     }
-
     return (
       <Tooltip
         title={() => {
@@ -901,10 +947,49 @@ function formatter(i) {
           );
         }}
       >
-        {(record[i] || "").split("-")[0]}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {(record[i] || "").split("-")[0]}
+          {tag && tag != "None" ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              strokeWidth={2}
+              width={15}
+              color={getColor(tag)}
+              className="w-6 h-6"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
+                clipRule="evenodd"
+              />
+              <path d="M5.26 17.242a.75.75 0 10-.897-1.203 5.243 5.243 0 00-2.05 5.022.75.75 0 00.625.627 5.243 5.243 0 005.022-2.051.75.75 0 10-1.202-.897 3.744 3.744 0 01-3.008 1.51c0-1.23.592-2.323 1.51-3.008z" />
+            </svg>
+          ) : (
+            ""
+          )}
+        </div>
       </Tooltip>
     );
   };
+}
+function getColor(tag) {
+  if (tag == "Plan") {
+    return "#1864ab";
+  }
+  if (tag == "Doing") {
+    return "#d9480f";
+  }
+  if (tag == "Done") {
+    return "#5c940d";
+  }
 }
 
 function formatName(i) {
@@ -935,7 +1020,6 @@ function colorCell(i, day, simple) {
     } else {
       result.colSpan = 0;
     }
-
     result.className = className;
     return result;
   };

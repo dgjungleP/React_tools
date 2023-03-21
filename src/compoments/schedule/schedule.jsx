@@ -179,6 +179,8 @@ function makeData(json) {
       base.tester = item.tester;
       base.releaseDay = item.releaseDate;
       base.launchDay = item.launchDate;
+      base.autoTestTag = item.autoTestTag;
+
       base.key =
         base.project +
         base.version +
@@ -274,6 +276,7 @@ function makeLocalData(json) {
       base.testingDay = item.testingDay;
       base.regressionTestDay = item.regressionTestDay;
       base.testDay = item.testDay;
+
       base.key =
         base.project +
         base.launchDay +
