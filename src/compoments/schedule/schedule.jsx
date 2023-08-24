@@ -170,17 +170,20 @@ function makeData(json) {
   let count;
   try {
     for (const item of json) {
+      const pb = item.pb;
       const base = {};
       base.project = item.projectNumber;
-      base.crl_pb = item.pb.map((data) => data.link).join(";");
-      base.version = item.pb.map((data) => data.versionId);
+      base.crl_pb = pb ? pb.map((data) => data.link).join(";") : "";
+      base.version = pb ? pb?.map((data) => data.versionId) : "";
       base.status = item.status;
-      base.projectName = item.pb[0].projectName;
+      base.projectName = pb ? pb[0].projectName : "";
       base.tester = item.tester;
       base.releaseDay = item.releaseDate;
       base.launchDay = item.launchDate;
       base.autoTestTag = item.autoTestTag;
-
+      if (!pb) {
+        console.log(item);
+      }
       base.key =
         base.project +
         base.version +

@@ -45,6 +45,7 @@ function DailyBody(props) {
   const [query, setQuery] = useState({
     start: now.add(-1, "d").format(baseTimeFormat),
     end: now.add(2, "d").format(baseTimeFormat),
+    filter: false,
   });
   const [loading, updateLoading] = useState(false);
   const [timeWindow, setTimeWindow] = useState([]);
@@ -85,6 +86,7 @@ function DailyBody(props) {
           timeWindow={timeWindow}
           systemConfig={systemConfig}
           localZone={localZone}
+          filter={query.filter}
         ></CurrentBody>
       </Spin>
     </>
@@ -258,7 +260,12 @@ function CurrentBody(props) {
     };
   });
   const handleChangeData = (data) => {
-    const currentData = [...data];
+    let currentData = [...data];
+    if (props.filter) {
+      currentData = currentData
+        .filter((data) => data.module)
+        .filter((data) => data.status == "NONE" || data.status == "HOLD_ON");
+    }
     currentData.forEach((inner, index) => {
       const pre = currentData[index - 1];
       if (
@@ -273,6 +280,7 @@ function CurrentBody(props) {
         inner.rowSpan = 1;
       }
     });
+
     setData(currentData);
   };
   const freshTableData = () => {
@@ -449,6 +457,7 @@ function TimeList(props) {
 function Header(props) {
   const query = props.query;
   const [time, updateTime] = useState({ start: query.start, end: query.end });
+  const [delaySearch, updateDelaySearch] = useState(false);
 
   const onTimeChange = (_, dateString) => {
     const newTime = JSON.parse(JSON.stringify(time));
@@ -471,6 +480,19 @@ function Header(props) {
       });
     });
   };
+  const handleDelayProjecyChange = (params) => {
+    updateDelaySearch(params);
+    let newQuery = JSON.parse(JSON.stringify(query));
+    if (params) {
+      newQuery.end = moment().format("yyyy-MM-DD");
+      newQuery.start = moment().add(-30, "d").format("yyyy-MM-DD");
+    } else {
+      newQuery.start = time.start;
+      newQuery.end = time.end;
+    }
+    newQuery.filter = params;
+    props.chanegQuery(newQuery);
+  };
 
   return (
     <>
@@ -492,6 +514,13 @@ function Header(props) {
           <Switch
             checked={props.localZone}
             onClick={props.handleLocalZone}
+          ></Switch>
+        </Col>{" "}
+        <Col>
+          <span style={{ marginRight: 5 }}>DelayProjects:</span>
+          <Switch
+            checked={delaySearch}
+            onClick={handleDelayProjecyChange}
           ></Switch>
         </Col>{" "}
         <Tooltip title="Fresh cache for actrual data">
