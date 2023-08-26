@@ -1,48 +1,62 @@
 .release-class {
-    background-color:powderblue !important;
-    font-weight: bold;
+  background-color: powderblue !important;
+  font-weight: bold;
 }
-.jobtime-class{
-    background-color:powderblue !important;
-    font-weight: bold;
+.jobtime-class {
+  background-color: powderblue !important;
+  font-weight: bold;
 }
-.dayoff-class{
-    background-color: rgba(255, 99, 132, 0.3) !important;
-    font-weight: bold;
+.dayoff-class {
+  background-color: rgba(255, 99, 132, 0.3) !important;
+  font-weight: bold;
 }
-.launch-class{
-    background-color:burlywood !important;
-    font-weight: bold;
+.launch-class {
+  background-color: burlywood !important;
+  font-weight: bold;
 }
-.relaxed-work{
-    font-weight: bold;
-    background-color:aliceblue;
-    border: 1px solid rgb(224, 224, 224)
+.relaxed-work {
+  font-weight: bold;
+  background-color: aliceblue;
+  border: 1px solid rgb(224, 224, 224);
 }
-.balanced-work{
-    background-color:antiquewhite;
-    font-weight: bold;
-    border: 1px solid rgb(224, 224, 224)
+.balanced-work {
+  background-color: antiquewhite;
+  font-weight: bold;
+  border: 1px solid rgb(224, 224, 224);
 }
-.overload-work{
-    font-weight: bold;
-    background-color:#f5c98e;
-    border: 1px solid rgb(224, 224, 224)
+.overload-work {
+  font-weight: bold;
+  background-color: #f5c98e;
+  border: 1px solid rgb(224, 224, 224);
 }
-.weekenday-class{
-    background-color:  lightgoldenrodyellow ;
+.weekenday-class {
+  background-color: lightgoldenrodyellow;
 }
-.weekenday-header-class{
-    background-color:   lightgoldenrodyellow !important;
+.weekenday-header-class {
+  background-color: lightgoldenrodyellow !important;
 }
-.today-class{
-    background-color:   #EDEDED  ;
-    
+.today-class {
+  background-color: #ededed;
 }
-.today-header-class{
-    background-color:   #EDEDED  !important;
-    
+.today-header-class {
+  background-color: #ededed !important;
 }
-.pending-class{
-    background-color: brown;
+.pending-class {
+  background-color: brown;
+}
+.prepare-class {
+  background-color: #b0e0e6 !important;
+  font-weight: bold;
+}
+.test-class {
+  background-color: #deb887 !important;
+  font-weight: bold;
+}
+.testing-class {
+  background-color: #b0e0e6 !important;
+  font-weight: bold;
+}
+.regressiontest-class {
+  background-color: #beeef4 !important;
+  font-weight: bold;
 }

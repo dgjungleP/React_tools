@@ -7,14 +7,20 @@ import {
   message,
   Tooltip,
   Collapse,
+  Form,
+  Modal,
+  InputNumber,
+  Select,
+  DatePicker,
 } from "antd";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "antd/dist/antd.css";
 import "./gantt.css";
 import {
   deleteDayoff,
   deleteOtherJob,
   setTester,
+  updateLocalShcedule,
 } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import moment from "moment";
@@ -22,6 +28,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { Filter } from "../editable/filter";
 const { Panel } = Collapse;
+
 function Gantt(props) {
   const year = props.query.year;
   const month = props.query.month;
@@ -36,25 +43,24 @@ function Gantt(props) {
           year={year}
           month={month}
           simple={props.simple}
+          extra={props.extra}
         ></GanttTable>
       </div>
-      <ReleaseTable
-        data={props.tableData}
-        updateData={props.updateData}
-        selectors={props.selectors}
-        groups={props.groups}
-        systemConfig={props.system}
-      ></ReleaseTable>
-      <OtherJobTable
-        data={props.otherJobTable}
-        freshData={freshData}
-        system={props.system}
-      ></OtherJobTable>
-      <DayOffTable
-        data={props.dayoffData}
-        freshData={freshData}
-        system={props.system}
-      ></DayOffTable>
+      {props.table(props)}
+      {props.needOtherJob && (
+        <OtherJobTable
+          data={props.otherJobTable}
+          freshData={freshData}
+          system={props.system}
+        ></OtherJobTable>
+      )}
+      {props.needDayOff && (
+        <DayOffTable
+          data={props.dayoffData}
+          freshData={freshData}
+          system={props.system}
+        ></DayOffTable>
+      )}
     </>
   );
 }
@@ -67,7 +73,6 @@ function GanttTable(props) {
     ...props.dataSource.filter((data) => (data.name || "").includes("*")),
     ...props.dataSource.filter((data) => !(data.name || "").includes("*")),
   ];
-
   const columns = [
     {
       title: "name",
@@ -79,6 +84,7 @@ function GanttTable(props) {
       render: formatName(),
       onCell: groupUser(),
     },
+    ...(props.extra || []),
   ];
   for (let i = 1; i <= getDays(year, month); i++) {
     const day = moment(year + "-" + month + "-" + i);
@@ -94,7 +100,7 @@ function GanttTable(props) {
       },
       dataIndex: day,
       key: day,
-      width: 60,
+      width: 90,
       align: "center",
       render: formatter(i),
       onCell: colorCell(i, day, simple),
@@ -122,6 +128,7 @@ function ReleaseTable(props) {
   const systemConfig = props.systemConfig;
   const [searchText, updateSearchText] = useState("");
   const [searchedColumn, updateSearchedColumn] = useState("");
+  const autoTetingTag = ["None", "Plan", "Doing", "Done", "Ignore"];
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -172,11 +179,13 @@ function ReleaseTable(props) {
   const statusSelectors = Array.from(
     new Set(data.map((inner) => inner.status))
   );
+  const domainSelectors = Array.from(
+    new Set(data.map((inner) => inner.domain))
+  ).filter((data) => data);
   const firstCol = {
     title: !systemConfig.needDivision ? "Group" : "Division",
     key: !systemConfig.needDivision ? "group" : "division",
     dataIndex: !systemConfig.needDivision ? "group" : "division",
-    editable: true,
     filters: makeFilter(
       (systemConfig.needDivision
         ? systemConfig.divisionList
@@ -191,6 +200,14 @@ function ReleaseTable(props) {
   const baseColumns = [
     firstCol,
     {
+      title: "Domain",
+      key: "domain",
+      dataIndex: "domain",
+      filters: makeFilter(domainSelectors),
+      onFilter: (value, record) => record["domain"].indexOf(value) === 0,
+      filterSearch: true,
+    },
+    {
       title: "Project",
       key: "Project",
       dataIndex: "project",
@@ -200,8 +217,6 @@ function ReleaseTable(props) {
       title: "Status",
       key: "Status",
       dataIndex: "status",
-      editable: true,
-
       filters: makeFilter(statusSelectors),
       onFilter: (value, record) => record.status.indexOf(value) === 0,
       filterSearch: true,
@@ -246,6 +261,41 @@ function ReleaseTable(props) {
       filters: makeFilter(props.selectors),
       onFilter: (value, record) => record.tester.indexOf(value) === 0,
       filterSearch: true,
+      onCell: (record) => {
+        return {
+          record,
+          editable: true,
+          dataIndex: "tester",
+          title: "Tester",
+          handleSave: handleSave,
+          selectors: props.selectors,
+          type: "multiple",
+        };
+      },
+    },
+    {
+      title: "AutoTestingTag",
+      key: "AutoTestingTag",
+      dataIndex: "autoTestTag",
+      editable: true,
+      sorter: {
+        compare: (a, b) => {
+          return a.autoTestTag > b.autoTestTag ? -1 : 1;
+        },
+      },
+      filters: makeFilter(autoTetingTag),
+      onFilter: (value, record) => record.autoTestTag == value,
+      filterSearch: true,
+      onCell: (record) => {
+        return {
+          record,
+          editable: true,
+          dataIndex: "autoTestTag",
+          title: "AutoTestingTag",
+          handleSave: handleSave,
+          selectors: autoTetingTag,
+        };
+      },
     },
     {
       title: "ReleaseDay",
@@ -261,6 +311,379 @@ function ReleaseTable(props) {
       title: "LaunchDay",
       key: "LaunchDay",
       dataIndex: "launchDay",
+      sorter: {
+        compare: (a, b) => {
+          return a.launchDay > b.launchDay ? -1 : 1;
+        },
+      },
+    },
+  ];
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+  const columns = baseColumns;
+  // const columns = baseColumns.map((col) => {
+  //   if (!col.editable) {
+  //     return col;
+  //   }
+  //   return {
+  //     ...col,
+  //     onCell: (record) => {
+  //       return {
+  //         record,
+  //         editable: col.editable,
+  //         dataIndex: col.dataIndex,
+  //         title: col.title,
+  //         handleSave: handleSave,
+  //         selectors: props.selectors,
+  //         type: "multiple",
+  //       };
+  //     },
+  //   };
+  // });
+
+  const updateData = (newData) => {
+    props.updateData(newData);
+  };
+  const handleSave = (row) => {
+    console.log(row);
+    if (Array.isArray(row.tester)) {
+      row.tester = (row.tester || []).join(",");
+    }
+    const newData = [...data];
+    const index = newData.findIndex((item) => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, { ...item, ...row });
+    setTester({
+      projectId: row.project,
+      tester: row.tester,
+      autoTestTag: row.autoTestTag,
+      system: systemConfig.systemName,
+      systemId: systemConfig.id,
+    }).then((response) => {
+      updateData(newData);
+    });
+  };
+  return (
+    <>
+      <div style={{ width: "99%", margin: "15px auto 0" }}>
+        <Table
+          components={components}
+          title={() => "Project"}
+          columns={columns}
+          dataSource={data}
+        ></Table>
+      </div>
+    </>
+  );
+}
+function LTReleaseTable(props) {
+  const systemConfig = props.systemConfig;
+  const [searchText, updateSearchText] = useState("");
+  const [searchedColumn, updateSearchedColumn] = useState("");
+  const [modalVisiable, setModalVisiable] = useState(false);
+  const [current, setCurrent] = useState({});
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <Filter
+        setSelectedKeys={setSelectedKeys}
+        selectedKeys={selectedKeys}
+        confirm={confirm}
+        clearFilters={clearFilters}
+        handlSearchText={updateSearchText}
+        handlSearchedColumn={updateSearchedColumn}
+        dataIndex={dataIndex}
+      ></Filter>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+    onFilterDropdownVisibleChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  const data = props.data;
+  const firstCol = {
+    title: !systemConfig.needDivision ? "Group" : "Division",
+    key: !systemConfig.needDivision ? "group" : "division",
+    dataIndex: !systemConfig.needDivision ? "group" : "division",
+    filters: makeFilter(
+      (systemConfig.needDivision
+        ? systemConfig.divisionList
+        : systemConfig.groupList) || []
+    ),
+    onFilter: (value, record) =>
+      record[!systemConfig.needDivision ? "group" : "division"].indexOf(
+        value
+      ) === 0,
+    filterSearch: true,
+  };
+  const baseColumns = [
+    firstCol,
+    {
+      title: "Project",
+      key: "Project",
+      dataIndex: "project",
+      ...getColumnSearchProps("project"),
+    },
+    {
+      title: "PB",
+      key: "PB",
+      dataIndex: "jiraName",
+    },
+    {
+      title: "PB Name",
+      key: "PBName",
+      dataIndex: "projectName",
+    },
+    {
+      title: "Tester",
+      key: "Tester",
+      dataIndex: "localTester",
+      sorter: {
+        compare: (a, b) => {
+          return a.tester > b.tester ? -1 : 1;
+        },
+      },
+      filters: makeFilter(props.selectors),
+      onFilter: (value, record) => record.tester.indexOf(value) === 0,
+      filterSearch: true,
+    },
+    {
+      title: "Prepare",
+      key: "Prepare",
+      dataIndex: "prepareDay",
+    },
+    {
+      title: "TestDay",
+      key: "TestDay",
+      dataIndex: "testDay",
+      render: (text, record) => {
+        return text ? moment(text).format("yyyy-MM-DD") : "";
+      },
+    },
+    {
+      title: "Testing",
+      key: "Testing",
+      dataIndex: "testingDay",
+    },
+    {
+      title: "Regression test",
+      key: "Regression test",
+      dataIndex: "regressionTestDay",
+    },
+    {
+      title: "Action",
+      key: "action",
+      dataIndex: "action",
+      render: (text, record) => {
+        return <a onClick={() => showModal(record)}>Edit</a>;
+      },
+    },
+  ];
+  const components = {
+    body: {
+      row: EditableRow,
+      cell: EditableCell,
+    },
+  };
+  const columns = baseColumns.map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+    return {
+      ...col,
+      onCell: (record) => {
+        return {
+          record,
+          editable: col.editable,
+          dataIndex: col.dataIndex,
+          title: col.title,
+          handleSave: handleSave,
+          selectors: props.selectors,
+          type: "multiple",
+        };
+      },
+    };
+  });
+  const showModal = (current) => {
+    setModalVisiable(true);
+    setCurrent(current);
+  };
+  const updateData = (newData) => {
+    props.updateData(newData);
+  };
+  const handleSave = (row) => {
+    row.tester = (row.tester || []).join(",");
+    const newData = [...data];
+    const index = newData.findIndex((item) => row.key === item.key);
+    const item = newData[index];
+    newData.splice(index, 1, { ...item, ...row });
+    setTester({
+      projectId: row.project,
+      tester: row.tester,
+      system: systemConfig.systemName,
+      systemId: systemConfig.id,
+    }).then((response) => {});
+    updateData(newData);
+  };
+  return (
+    <>
+      <div style={{ width: "99%", margin: "15px auto 0" }}>
+        <Table
+          components={components}
+          title={() => "Project"}
+          columns={columns}
+          dataSource={data}
+        ></Table>
+        <OperateModal
+          title={current.project + "#-" + current.jiraName + "#"}
+          visible={modalVisiable}
+          data={current}
+          changeVisiable={setModalVisiable}
+          systemConfig={systemConfig}
+          fresh={props.fresh}
+        ></OperateModal>
+      </div>
+    </>
+  );
+}
+function DeveloperReleaseTable(props) {
+  const systemConfig = props.systemConfig;
+  const [searchText, updateSearchText] = useState("");
+  const [searchedColumn, updateSearchedColumn] = useState("");
+  const [modalVisiable, setModalVisiable] = useState(false);
+  const [current, setCurrent] = useState({});
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <Filter
+        setSelectedKeys={setSelectedKeys}
+        selectedKeys={selectedKeys}
+        confirm={confirm}
+        clearFilters={clearFilters}
+        handlSearchText={updateSearchText}
+        handlSearchedColumn={updateSearchedColumn}
+        dataIndex={dataIndex}
+      ></Filter>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex]
+            .toString()
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        : "",
+    onFilterDropdownVisibleChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ""}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  const data = props.data;
+  const firstCol = {
+    title: !systemConfig.needDivision ? "Group" : "Division",
+    key: !systemConfig.needDivision ? "group" : "division",
+    dataIndex: !systemConfig.needDivision ? "group" : "division",
+    filters: makeFilter(
+      (systemConfig.needDivision
+        ? systemConfig.divisionList
+        : systemConfig.groupList) || []
+    ),
+    onFilter: (value, record) =>
+      record[!systemConfig.needDivision ? "group" : "division"].indexOf(
+        value
+      ) === 0,
+    filterSearch: true,
+  };
+  const baseColumns = [
+    firstCol,
+    {
+      title: "Project",
+      key: "Project",
+      dataIndex: "project",
+      ...getColumnSearchProps("project"),
+    },
+    {
+      title: "Project Name",
+      key: "ProjectName",
+      dataIndex: "projectName",
+    },
+    {
+      title: "Developer",
+      key: "Developer",
+      dataIndex: "localTester",
+      sorter: {
+        compare: (a, b) => {
+          return a.tester > b.tester ? -1 : 1;
+        },
+      },
+      filters: makeFilter(props.selectors),
+      onFilter: (value, record) => record.tester.indexOf(value) === 0,
+      filterSearch: true,
+    },
+    {
+      title: "StartTime",
+      key: "StartTime",
+      dataIndex: "startTime",
+      sorter: {
+        compare: (a, b) => {
+          return a.releaseDay > b.releaseDay ? -1 : 1;
+        },
+      },
+    },
+    {
+      title: "EndTime",
+      key: "EndTime",
+      dataIndex: "endTime",
       sorter: {
         compare: (a, b) => {
           return a.launchDay > b.launchDay ? -1 : 1;
@@ -293,7 +716,10 @@ function ReleaseTable(props) {
       },
     };
   });
-
+  const showModal = (current) => {
+    setModalVisiable(true);
+    setCurrent(current);
+  };
   const updateData = (newData) => {
     props.updateData(newData);
   };
@@ -307,9 +733,8 @@ function ReleaseTable(props) {
       projectId: row.project,
       tester: row.tester,
       system: systemConfig.systemName,
-    }).then((response) => {
-      console.log(response);
-    });
+      systemId: systemConfig.id,
+    }).then((response) => {});
     updateData(newData);
   };
   return (
@@ -321,6 +746,14 @@ function ReleaseTable(props) {
           columns={columns}
           dataSource={data}
         ></Table>
+        <OperateModal
+          title={current.project + "#-" + current.jiraName + "#"}
+          visible={modalVisiable}
+          data={current}
+          changeVisiable={setModalVisiable}
+          systemConfig={systemConfig}
+          fresh={props.fresh}
+        ></OperateModal>
       </div>
     </>
   );
@@ -473,7 +906,100 @@ function DayOffTable(props) {
     </>
   );
 }
+function OperateModal(props) {
+  const config = props.systemConfig;
+  const changeVisiable = props.changeVisiable;
+  const localZone = props.localZone;
+  const data = props.data;
+  const [currentData, setCurrentData] = useState({});
+  const [form] = Form.useForm();
+  const handleOk = () => {
+    const formValues = form.getFieldsValue();
+    const request = {
+      ...currentData,
+      ...formValues,
+    };
+    request.tester = (request.localTester || []).join(",");
 
+    request.system = config.systemName;
+    request.systemId = config.id;
+
+    request.projectId = request.project;
+    request.jira = request.jiraName;
+    request.prepareDay = request.prepareTime;
+    request.testingDay = request.testingTime;
+    request.regressionTestDay = request.regressionTestTime;
+    updateLocalShcedule(request).then((response) => {
+      props.fresh();
+      changeVisiable(false);
+    });
+    message.info("Please waiting for update!");
+  };
+  const handleCancel = () => {
+    changeVisiable(false);
+  };
+  const tryCalculate = () => {
+    if (!form.getFieldValue("localTester") || !form.getFieldValue("testDay")) {
+      return;
+    }
+    const launchDay = moment(currentData.launchDay);
+    const releaseDay = moment(currentData.releaseDay);
+    const testDay = moment(form.getFieldValue("testDay"));
+
+    if (form.getFieldValue("testingTime") == 0) {
+      form.setFieldValue("testingTime", releaseDay.diff(testDay, "days"));
+    }
+    if (form.getFieldValue("regressionTestTime") == 0) {
+      form.setFieldValue(
+        "regressionTestTime",
+        launchDay.diff(releaseDay, "days")
+      );
+    }
+  };
+  useEffect(() => {
+    const currentData = { ...data };
+    currentData.localTester = currentData.localTester
+      ? currentData.localTester.split(",")
+      : undefined;
+    currentData.prepareTime = currentData.prepareDay;
+    currentData.testingTime = currentData.testingDay;
+    currentData.regressionTestTime = currentData.regressionTestDay;
+    currentData.testDay = moment(currentData.testDay);
+    setCurrentData(currentData);
+    form.setFieldsValue(currentData);
+  }, [data, localZone]);
+  return (
+    <Modal
+      title={props.title}
+      open={props.visible}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      forceRender
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item label={"Prepare Time:"} name={"prepareTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Testing Time:"} name={"testingTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Regression Test Time:"} name={"regressionTestTime"}>
+          <InputNumber></InputNumber>
+        </Form.Item>
+        <Form.Item label={"Local Testster:"} name={"localTester"}>
+          <Select mode="multiple" onChange={tryCalculate}>
+            {config.testerList.map((user) => {
+              return <Select.Option key={user}>{user}</Select.Option>;
+            })}
+          </Select>
+        </Form.Item>
+        <Form.Item label={"Test Day:"} name={"testDay"}>
+          <DatePicker onChange={tryCalculate}></DatePicker>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+}
 //Method
 
 function checkWeekendDay(weekNumber, simple) {
@@ -519,36 +1045,46 @@ function groupUser() {
 }
 function formatter(i) {
   return (text, record, index) => {
-    let tiltle = {};
+    let title = {};
+    let tag;
     if (record[i]) {
       let memo = record[i].split("-&")[1];
       memo = (memo || "{}").replace('/\\"/g', '"');
-      tiltle = JSON.parse(memo);
+      title = JSON.parse(memo);
+      tag = title.autoTestTag;
     }
     let bodyTemp;
-    if (tiltle.key == "otherJob") {
+    if (title.key == "otherJob") {
       bodyTemp = (
         <>
           <Row>
-            <span>JobName: {tiltle.jobName}</span>
+            <span>JobName: {title.jobName}</span>
           </Row>
           <Row>
-            <span>StartTime: {tiltle.startTime}</span>
+            <span>StartTime: {title.startTime}</span>
           </Row>
           <Row>
-            <span>EndTime: {tiltle.endTime}</span>
+            <span>EndTime: {title.endTime}</span>
           </Row>
         </>
       );
-    } else if (tiltle.key == "dayoff") {
+    } else if (title.key == "dayoff") {
       bodyTemp = (
         <>
           <Row>
-            <span>StartTime: {tiltle.startTime}</span>
+            <span>StartTime: {title.startTime}</span>
           </Row>
 
           <Row>
-            <span>days: {tiltle.days}</span>
+            <span>days: {title.days}</span>
+          </Row>
+        </>
+      );
+    } else if (title.key == "local") {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>Project: {title.project}</span>
           </Row>
         </>
       );
@@ -556,44 +1092,101 @@ function formatter(i) {
       bodyTemp = (
         <>
           <Row>
-            <span>Project: {tiltle.project}</span>
+            <span>Project: {title.project}</span>
           </Row>
           <Row>
-            <span>ReleaseTime: {tiltle.startTime}</span>
+            <span>ReleaseTime: {title.startTime}</span>
           </Row>
           <Row>
-            <span>LaunchTime: {tiltle.endTime}</span>
+            <span>LaunchTime: {title.endTime}</span>
           </Row>
           <Row>
-            <span>ActuallyDoneTime: {tiltle.actuallyDoneTime}</span>
+            <span>ActuallyDoneTime: {title.actuallyDoneTime}</span>
           </Row>
           <Row>
-            <span>Used Time: {tiltle.usedTime}</span>
+            <span>Used Time: {title.usedTime}</span>
+          </Row>
+          <Row>
+            <span>AutoTestingTag: {title.autoTestTag}</span>
           </Row>
         </>
       );
     }
-
     return (
       <Tooltip
         title={() => {
           return (
             <Col>
               <Row>
-                <span>Type: {tiltle.type}</span>
+                <span>Type: {title.type}</span>
               </Row>
               <Row>
-                <span>User: {tiltle.user}</span>
+                <span>User: {title.user}</span>
               </Row>
               {bodyTemp}
             </Col>
           );
         }}
       >
-        {(record[i] || "").split("-")[0]}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {(record[i] || "").split("-")[0]}
+          {tag && tag != "None" ? (
+            tag == "Ignore" ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                strokeWidth={2}
+                width={15}
+                color={getColor(tag)}
+                className="w-6 h-6"
+              >
+                <path d="M3.53 2.47a.75.75 0 00-1.06 1.06l18 18a.75.75 0 101.06-1.06l-18-18zM20.25 5.507v11.561L5.853 2.671c.15-.043.306-.075.467-.094a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93zM3.75 21V6.932l14.063 14.063L12 18.088l-7.165 3.583A.75.75 0 013.75 21z" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                strokeWidth={2}
+                width={15}
+                color={getColor(tag)}
+                className="w-6 h-6"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.583A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )
+          ) : (
+            ""
+          )}
+        </div>
       </Tooltip>
     );
   };
+}
+function getColor(tag) {
+  if (tag == "Plan") {
+    return "#1864ab";
+  }
+  if (tag == "Doing") {
+    return "#d9480f";
+  }
+  if (tag == "Done") {
+    return "#5c940d";
+  }
+  if (tag == "Ignore") {
+    return "#495057";
+  }
 }
 
 function formatName(i) {
@@ -610,7 +1203,9 @@ function colorCell(i, day, simple) {
     // if (checkWeekendDay(weekNumber, simple)) {
     //   className += " weekenday-class ";
     // }
-    if (moment().date() == i && moment().month() == day.month()) {
+
+    const now = moment();
+    if (now.date() == i && now.month() == day.month()) {
       className += " today-class";
     }
     if (record.missCol.findIndex((data) => data === i) < 0) {
@@ -622,7 +1217,6 @@ function colorCell(i, day, simple) {
     } else {
       result.colSpan = 0;
     }
-
     result.className = className;
     return result;
   };
@@ -635,12 +1229,14 @@ function colorHeaderCell(i, day, simple) {
     if (checkWeekendDay(weekNumber, simple)) {
       className += " weekenday-header-class ";
     }
-    if (moment().date() == i) {
+    const now = moment();
+    if (now.date() == i && now.month() == day.month()) {
       className += " today-header-class";
     }
+
     result.className = className;
     return result;
   };
 }
 
-export { Gantt };
+export { Gantt, ReleaseTable, LTReleaseTable, DeveloperReleaseTable };

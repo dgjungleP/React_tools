@@ -101,7 +101,11 @@ const EditableCell = ({
     );
   }
 
-  return <td {...restProps}>{childNode}</td>;
+  return (
+    <td key={dataIndex} {...restProps}>
+      {childNode}
+    </td>
+  );
 };
 
 export { EditableCell, EditableRow };

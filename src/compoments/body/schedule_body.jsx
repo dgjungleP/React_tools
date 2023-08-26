@@ -20,7 +20,6 @@ import { Gantt } from "../gantt/gant";
 import { ReloadOutlined } from "@ant-design/icons";
 import {
   getDayoff,
-  getProject,
   getOtherJob,
   updateDayoff,
   updateOtherJob,
@@ -33,6 +32,9 @@ const { RangePicker } = DatePicker;
 function ScheduleBody(props) {
   const date = new Date();
   const systemConfig = props.systemConfig;
+  const getProject = props.getProject;
+  const makeData = props.makeData;
+  const groupData = props.groupData;
   const [groups, setGroup] = useState(systemConfig.groupList);
   const [selectors, setSelectors] = useState(systemConfig.testerList);
   const [query, updateQuery] = useState({
@@ -42,7 +44,7 @@ function ScheduleBody(props) {
     group: groups,
     system: systemConfig.systemName,
   });
-
+  const table = props.table ? props.table : () => {};
   const [showGantt, setShowGant] = useState(false);
   const [tableData, updateTableData] = useState([]);
   const [ganttTableData, updateganttTableData] = useState([]);
@@ -59,7 +61,6 @@ function ScheduleBody(props) {
       "month"
     );
     updateQuery(newQuery);
-    // freshData(newQuery);
   };
   const freshData = (query) => {
     updateLoading(true);
@@ -112,6 +113,7 @@ function ScheduleBody(props) {
             return otherJob;
           }
         );
+        newDayoffTableData = props.tryMergeDayoff(newDayoffTableData);
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);
@@ -130,7 +132,9 @@ function ScheduleBody(props) {
           currentQuery.month,
           currentQuery.year
         );
+        updateganttTableData([]);
         updateganttTableData(newGanttData);
+        updateTableData([]);
         updateTableData(newTableData);
         updateLoading(false);
       })
@@ -156,9 +160,12 @@ function ScheduleBody(props) {
         system={systemConfig}
         tableData={tableData}
         updateData={changeData}
+        needDayOff={props.needDayOff}
+        needOtherJob={props.needOtherJob}
       ></Header>
       <Spin spinning={loading}>
         <Gantt
+          extra={props.extra}
           query={query}
           showGantt={showGantt}
           tableData={tableData}
@@ -170,6 +177,10 @@ function ScheduleBody(props) {
           simple={simple}
           system={systemConfig}
           groups={groups}
+          fresh={() => freshData(query)}
+          table={table}
+          needDayOff={props.needDayOff}
+          needOtherJob={props.needOtherJob}
         ></Gantt>
       </Spin>
     </>
@@ -178,7 +189,8 @@ function ScheduleBody(props) {
 
 function Header(props) {
   const query = props.query;
-
+  const needDayOff = props.needDayOff;
+  const needOtherJob = props.needOtherJob;
   const [time, updateTime] = useState({ year: query.year, month: query.month });
   const [group, updateGroup] = useState([...query.group]);
   const [simple, updatSimple] = useState(false);
@@ -263,20 +275,32 @@ function Header(props) {
         </Tooltip>
       </Row>
       <Divider>Operations</Divider>
-      <Row gutter={15} justify="left" style={{ marginLeft: 40 }} align="start">
-        <Col>
-          <DayOffRequestClick
-            freshData={freshData}
-            system={props.system}
-          ></DayOffRequestClick>
-        </Col>
-        <Col>
-          <OtherJobClick
-            freshData={freshData}
-            system={props.system}
-          ></OtherJobClick>
-        </Col>
-      </Row>
+      {(needDayOff || needOtherJob) && (
+        <Row
+          gutter={15}
+          justify="left"
+          style={{ marginLeft: 40 }}
+          align="start"
+        >
+          {needDayOff && (
+            <Col>
+              <DayOffRequestClick
+                freshData={freshData}
+                system={props.system}
+              ></DayOffRequestClick>
+            </Col>
+          )}
+          {needOtherJob && (
+            <Col>
+              <OtherJobClick
+                freshData={freshData}
+                system={props.system}
+              ></OtherJobClick>
+            </Col>
+          )}
+        </Row>
+      )}
+
       <Divider></Divider>
     </>
   );
@@ -322,7 +346,12 @@ function OtherJobRequest(props) {
     if (checkValid()) {
       return;
     }
-    const request = { user: user, systemName: system, jobName: jobName };
+    const request = {
+      user: user,
+      systemName: system,
+      jobName: jobName,
+      systemId: systemConfig.id,
+    };
     request.startTime = time[0].format("YYYY-MM-DD");
     request.endTime = time[1].format("YYYY-MM-DD");
     request.days = time[1].diff(time[0], "days") + 1;
@@ -437,7 +466,11 @@ function DayOffRequest(props) {
     if (checkValid()) {
       return;
     }
-    const request = { tester: user, systemName: system };
+    const request = {
+      tester: user,
+      systemName: system,
+      systemId: systemConfig.id,
+    };
     request.startTime = time[0].format("YYYY-MM-DD");
     request.endTime = time[1].format("YYYY-MM-DD");
     request.days = time[1].diff(time[0], "days") + 1;
@@ -517,58 +550,7 @@ function getDays(year, month) {
   var d = new Date(year, month, 0);
   return d.getDate();
 }
-function groupData(tableData, year, month, selectors) {
-  let count = selectors.length;
-  const result = selectors.map((data, index) => ({
-    name: data,
-    dataList: [],
-    index: index,
-  }));
-  const groupData = tableData.flatMap((data) =>
-    (data.tester || "None").split(",").map((testerData) => {
-      const newData = {};
-      Object.assign(newData, data);
-      newData.tester = testerData;
-      return newData;
-    })
-  );
-  groupData
-    .filter((data) => data.tester && data.tester != "None")
-    .forEach((data) => {
-      const item = { name: data.tester };
-      let tag = true;
-      for (const resultItem of result) {
-        if (resultItem.name == item.name) {
-          const timeWindow = resultItem.dataList.map((dataItem) => {
-            return getTime(dataItem, month, year);
-          });
-          const time = getTime(data, month, year);
-          if (
-            checkTime(timeWindow, time.start, time.end) ||
-            resultItem.dataList.length == 0
-          ) {
-            resultItem.dataList.push(data);
-            tag = false;
-            break;
-          }
-        }
-      }
-      let index = (
-        result.find((data) => data.name == item.name) || { index: -1 }
-      ).index;
-      if (tag) {
-        item.dataList = [data];
-        item.index = index > 0 ? index : ++count;
-        result.push(item);
-      }
-    });
-  for (const item of result) {
-    item.dataList.sort((l, r) => {
-      return l.releaseDay > r.releaseDay ? -1 : 1;
-    });
-  }
-  return result;
-}
+
 function getTime(dataItem, month, year) {
   let start = getDateNumber(dataItem.releaseDay);
   let end = getDateNumber(dataItem.launchDay);
@@ -591,16 +573,67 @@ function getTime(dataItem, month, year) {
   }
   return { start, end, overload };
 }
+function getLocalTime(starTime, endTime, month, year) {
+  let start = getDateNumber(starTime);
+  let end = getDateNumber(endTime);
+  let startMoth = getMothNumber(starTime);
+  let startYear = getYearNumber(starTime);
+  let endMoth = getMothNumber(endTime);
+  let endYear = getYearNumber(endTime);
+  const currentDate = moment([year, month - 1]);
+  const startDate = moment([startYear, startMoth - 1]);
+  const endDate = moment([endYear, endMoth - 1]);
+  let overload = false;
+  if (startDate.isBefore(currentDate)) {
+    start = 1;
+    overload = true;
+  } else if (startDate.isAfter(currentDate)) {
+    start = getDays(year, month) + 1;
+    overload = true;
+  }
+  if (endDate.isAfter(currentDate)) {
+    end = getDays(year, month) + 1;
+    overload = true;
+  } else if (endDate.isBefore(currentDate)) {
+    end = 1;
+    overload = true;
+  }
+  // if (endMoth == parseInt(month) && endYear == parseInt(year)) {
+  //   overload = false;
+  // }
+  return { start, end, overload };
+}
+
+function checkTimeInYearAndMonth(time, year, month) {
+  let startMoth = getMothNumber(time);
+  let startYear = getYearNumber(time);
+  const currentDate = moment([year, month - 1]);
+  const startDate = moment([startYear, startMoth - 1]);
+
+  return {
+    before: startDate.isBefore(currentDate),
+    after: startDate.isAfter(currentDate),
+    same: startDate.isSame(currentDate),
+  };
+}
 
 function makeGanttTableData(tableDataGroup, month, year) {
-  const ganttTableData = [];
+  let ganttTableData = [];
   tableDataGroup
     .filter((data) => data.name && data.name != "None")
     .sort((l, r) => l.index - r.index)
     .forEach((data, index) => {
-      const result = { key: index, rowSpan: 1, missCol: [], dayCount: 0 };
-      result.name = data.name;
+      const result = {
+        key: index,
+        rowSpan: 1,
+        missCol: [],
+        dayCount: 0,
+        name: data.name,
+      };
       makeLine(data.dataList, result, month, year);
+      if (result.miss) {
+        return;
+      }
       if (
         ganttTableData[index - 1] &&
         ganttTableData[index - 1].name == result.name
@@ -617,22 +650,7 @@ function makeGanttTableData(tableDataGroup, month, year) {
     });
   return ganttTableData;
 }
-function checkTime(timeWindow, start, end) {
-  const timeArray = [];
-  timeWindow.forEach((time) => {
-    for (let i = time.start; i <= time.end; i++) {
-      timeArray.push(i);
-    }
-  });
-  const currentTimeArray = [];
-  for (let i = start; i <= end; i++) {
-    currentTimeArray.push(i);
-  }
-  const intersection = timeArray.filter((data) => {
-    return currentTimeArray.indexOf(data) > -1;
-  });
-  return intersection.length <= 0;
-}
+
 function getDateNumber(time) {
   return parseInt(time.split("-")[2]);
 }
@@ -644,7 +662,8 @@ function getMothNumber(time) {
 }
 function makeLine(dataList, result, month, year) {
   dataList.forEach((data) => {
-    const missCol = [];
+    result.checkFlag = true;
+    let missCol = [];
     const { start, end, overload } = getTime(data, month, year);
     for (let i = start + 1; i < end; i++) {
       missCol.push(i);
@@ -654,6 +673,8 @@ function makeLine(dataList, result, month, year) {
     memo.user = data.tester;
     memo.key = data.type;
     if (data.type && data.type == "dayoff") {
+      result.project = "休假";
+      result.jiraName = "休假";
       memo.type = "休假";
       memo.startTime = data.releaseDay.split(" ")[0];
       memo.days = end - start + 1;
@@ -667,18 +688,152 @@ function makeLine(dataList, result, month, year) {
         missCol.push(end);
       }
     } else if (data.type == "otherJob") {
+      debugger;
       memo.type = "其他";
+      result.project = data.project;
+      result.jiraName = "N/A";
       memo.startTime = data.releaseDay.split(" ")[0];
       memo.endTime = data.launchDay.split(" ")[0];
       memo.jobName = data.jobName;
       result[start] =
-        data.project +
+        (data.project || "").replaceAll("-", "_") +
         "-JobTime-" +
         (end - start + (overload ? 0 : 1)) +
         "-&" +
         JSON.stringify(memo);
       if (start != end) {
         missCol.push(end);
+      }
+    } else if (data.type == "local") {
+      memo.type = "Local Test";
+      memo.project = data.project;
+
+      result.project = data.project;
+      result.jiraName = data.jiraName;
+      result.releaseDate = data.releaseDay;
+      result.launchDate = data.launchDay;
+      result.needToolTip = true;
+      result.overloadMiss = true;
+      const prepareDayTime = data.prepareDayTime;
+      const regressionTestDayTime = data.regressionTestDayTime;
+      const testDay = data.testDay;
+      const testingDayTime = data.testingDayTime;
+
+      const prepareStart = getLocalTime(prepareDayTime, testDay, month, year);
+      const testStart = getLocalTime(prepareDayTime, testDay, month, year);
+      const testingStart = getLocalTime(testDay, testingDayTime, month, year);
+      const regressionTestStart = getLocalTime(
+        testingDayTime,
+        regressionTestDayTime,
+        month,
+        year
+      );
+      const regressionTestEnd = getLocalTime(
+        testingDayTime,
+        regressionTestDayTime,
+        month,
+        year
+      );
+      let flag = false;
+      missCol = [];
+      if (data.prepareDay != 0) {
+        result[prepareStart.start] =
+          " " +
+          "-Prepare-" +
+          (testStart.end - prepareStart.start) +
+          "-&" +
+          JSON.stringify(memo);
+        for (let i = prepareStart.start + 1; i < testStart.end; i++) {
+          missCol.push(i);
+        }
+        flag = true;
+        result.overloadMiss = false;
+      } else {
+        flag = false;
+      }
+
+      if (checkTimeInYearAndMonth(testDay, year, month).same) {
+        result[testStart.end] = " " + "-Test-1" + "-&" + JSON.stringify(memo);
+        flag = true;
+        result.overloadMiss = false;
+      } else {
+        flag = false;
+      }
+
+      if (data.testingDay != 0) {
+        result[testingStart.start + (flag ? 1 : 0)] =
+          " " +
+          "-Testing-" +
+          (regressionTestStart.start +
+            1 -
+            (testingStart.start + (flag ? 1 : 0))) +
+          "-&" +
+          JSON.stringify(memo);
+        for (
+          let i = testingStart.start + (flag ? 1 : 0) + 1;
+          i < regressionTestStart.start + 1;
+          i++
+        ) {
+          missCol.push(i);
+        }
+        result.overloadMiss = false;
+        flag = true;
+      } else {
+        flag = false;
+      }
+
+      if (data.regressionTestDay != 0) {
+        result[
+          regressionTestStart.start +
+            (flag ? 1 : 0) +
+            (data.testingDay == 0 ? 1 : 0)
+        ] =
+          " " +
+          "-RegressionTest-" +
+          (regressionTestEnd.end +
+            1 -
+            (regressionTestStart.start +
+              (flag ? 1 : 0) +
+              (data.testingDay == 0 ? 1 : 0))) +
+          "-&" +
+          JSON.stringify(memo);
+        // 当 regression 为 0 的时候
+        if (regressionTestStart.start === regressionTestEnd.end) {
+          for (
+            let i = regressionTestStart.start + 1;
+            i < regressionTestEnd.end + 2;
+            i++
+          ) {
+            missCol.push(i);
+          }
+
+          result.overloadMiss = false;
+        } else {
+          for (
+            let i =
+              regressionTestStart.start +
+              (flag ? 1 : 0) +
+              (data.testingDay == 0 ? 1 : 0) +
+              1;
+            i < regressionTestEnd.end + 1;
+            i++
+          ) {
+            missCol.push(i);
+          }
+        }
+      }
+      result.dayCount += testingStart.end - prepareStart.start + 1;
+      const maxDay = getDays(year, month);
+      if (result.overloadMiss) {
+        result.miss =
+          (prepareStart.start > maxDay &&
+            testStart.end > maxDay &&
+            testingStart.start + 1 > maxDay &&
+            regressionTestStart.start + 1 > maxDay) ||
+          (prepareStart.start <= 0 &&
+            testStart.end <= 0 &&
+            testingStart.start + 1 <= 0 &&
+            regressionTestStart.start + 1 <= 0);
       }
     } else {
       memo.type = "项目";
@@ -687,6 +842,8 @@ function makeLine(dataList, result, month, year) {
       memo.endTime = data.launchDay;
       memo.usedTime = data.usedTime;
       memo.actuallyDoneTime = data.actuallyDoneTime || "";
+      memo.autoTestTag = data.autoTestTag;
+
       result[start] =
         data.project +
         "-Release-" +
@@ -700,40 +857,6 @@ function makeLine(dataList, result, month, year) {
       result.missCol.push(item);
     });
   });
-}
-
-function makeData(json) {
-  const result = [];
-  let count = 0;
-  try {
-    for (const item of json) {
-      const base = {};
-      base.project = item.projectNumber;
-      base.crl_pb = item.pb.map((data) => data.link).join(";");
-      base.version = item.pb.map((data) => data.versionId);
-      base.status = item.status;
-      base.projectName = item.pb[0].projectName;
-      base.tester = item.tester;
-      base.releaseDay = item.releaseDate;
-      base.launchDay = item.launchDate;
-      base.key =
-        base.project +
-        base.version +
-        base.launchDay +
-        base.projectName +
-        base.tester +
-        Math.random(100);
-      base.group = item.group;
-      base.division = item.division;
-      base.usedTime = item.usedTime;
-      base.actuallyDoneTime = item.actuallyDoneTime;
-      result.push(base);
-      count++;
-    }
-  } catch (e) {
-    console.log(e);
-  }
-  return result;
 }
 
 export { ScheduleBody };
