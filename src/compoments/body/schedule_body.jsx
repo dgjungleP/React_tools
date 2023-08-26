@@ -688,7 +688,6 @@ function makeLine(dataList, result, month, year) {
         missCol.push(end);
       }
     } else if (data.type == "otherJob") {
-      debugger;
       memo.type = "其他";
       result.project = data.project;
       result.jiraName = "N/A";
@@ -835,6 +834,20 @@ function makeLine(dataList, result, month, year) {
             testingStart.start + 1 <= 0 &&
             regressionTestStart.start + 1 <= 0);
       }
+    } else if (data.type == "developer") {
+      memo.type = "Developer";
+      memo.project = data.project;
+      memo.startTime = data.startTime;
+      memo.endTime = data.endTime;
+
+      result[start] =
+        data.project +
+        "-Release-" +
+        (end - start) +
+        "-&" +
+        JSON.stringify(memo);
+      result[end] = data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
+      result.dayCount += end - start + 1;
     } else {
       memo.type = "项目";
       memo.project = data.project;

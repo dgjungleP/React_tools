@@ -164,12 +164,12 @@ function DeveloperShceduleTab() {
         return (
           <ScheduleBody
             systemConfig={system.config}
-            needDayOff={true}
-            needOtherJob={true}
+            needDayOff={false}
+            needOtherJob={false}
             getProject={(query) => getDeveloperShcedule(query)}
-            makeData={(data) => makeLocalData(data)}
+            makeData={(data) => makeDeveloperData(data)}
             groupData={(tableData, year, month, selectors) =>
-              groupLocalData(tableData, year, month, selectors)
+              groupDeveloperData(tableData, year, month, selectors)
             }
             tryMergeDayoff={(data) => localTryMergeDayOff(data)}
             table={(props) => (
@@ -182,54 +182,7 @@ function DeveloperShceduleTab() {
                 fresh={props.fresh}
               ></DeveloperReleaseTable>
             )}
-            extra={[
-              {
-                title: "Project#",
-                dataIndex: "project",
-                key: "project",
-                width: 100,
-                fixed: "left",
-                align: "center",
-                render: (text, record, index) => {
-                  if (!record.needToolTip) {
-                    return <>{record.project}</>;
-                  }
-                  let bodyTemp = (
-                    <>
-                      <Row>
-                        <span>Project: {record.project}</span>
-                      </Row>
-                      <Row>
-                        <span>ReleaseDate: {record.releaseDate}</span>
-                      </Row>
-                      <Row>
-                        <span>LaunchDate: {record.launchDate}</span>
-                      </Row>
-                    </>
-                  );
-                  return (
-                    <Tooltip
-                      title={() => {
-                        return <Col>{bodyTemp}</Col>;
-                      }}
-                    >
-                      {record.project}
-                    </Tooltip>
-                  );
-                },
-              },
-              {
-                title: "Jira#",
-                dataIndex: "jiraName",
-                key: "jiraName",
-                width: 200,
-                fixed: "left",
-                align: "center",
-                render: (text, record, index) => {
-                  return record.jiraName;
-                },
-              },
-            ]}
+            extra={[]}
           ></ScheduleBody>
         );
       }}
@@ -386,6 +339,40 @@ function makeLocalData(json) {
   }
   return result;
 }
+function makeDeveloperData(json) {
+  const result = [];
+  try {
+    for (const item of json) {
+      const pb = item.pb;
+      const base = {};
+      base.project = item.projectNumber;
+      base.crl_pb = pb ? pb.map((data) => data.link).join(";") : "";
+      base.version = pb ? pb?.map((data) => data.versionId) : "";
+      base.status = item.status;
+      base.projectName = pb ? pb[0].projectName : "";
+      base.localTester = item.localTester;
+      base.tester = item.localTester;
+      base.releaseDay = item.releaseDate;
+      base.launchDay = item.launchDate;
+      base.endTime = item.actuallyDoneTime;
+      base.startTime = item.startDate;
+      base.developer = item.developer;
+      base.key =
+        base.project +
+        base.launchDay +
+        base.projectName +
+        base.tester +
+        Math.random(100);
+      base.group = item.group;
+      base.division = item.division;
+      base.type = "developer";
+      result.push(base);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+  return result;
+}
 function groupLocalData(tableData, year, month, selectors) {
   let count = selectors.length;
   // 非 dayoff
@@ -478,7 +465,100 @@ function groupLocalData(tableData, year, month, selectors) {
   newResult = newResult.sort(compare("name"));
   return newResult;
 }
-
+function groupDeveloperData(tableData, year, month, selectors) {
+  let count = selectors.length;
+  // 非 dayoff
+  let result = selectors.map((data, index) => ({
+    name: data,
+    dataList: [],
+    index: index,
+  }));
+  const groupData = tableData.flatMap((data) =>
+    (data.developer || "None").split(",").map((testerData) => {
+      const newData = {};
+      Object.assign(newData, data);
+      newData.developer = testerData;
+      return newData;
+    })
+  );
+  groupData
+    .filter(
+      (data) =>
+        data.developer && data.developer != "None" && data.type !== "dayoff"
+    )
+    .forEach((data) => {
+      const item = { name: data.developer };
+      let tag = true;
+      for (const resultItem of result) {
+        if (resultItem.name == item.name) {
+          if (resultItem.dataList.length == 0) {
+            resultItem.dataList.push(data);
+            tag = false;
+            break;
+          }
+        }
+      }
+      let index = (
+        result.find((data) => data.name == item.name) || { index: 0 }
+      ).index;
+      if (tag) {
+        item.dataList = [data];
+        item.index = index >= 0 ? index : ++count;
+        result.push(item);
+      }
+    });
+  // dayoff
+  let dayOffNewArr = selectors.map((data, index) => ({
+    name: data,
+    dataList: [],
+    index: index,
+  }));
+  groupData
+    .filter(
+      (data) =>
+        data.developer && data.developer != "None" && data.type === "dayoff"
+    )
+    .forEach((data) => {
+      const item = { name: data.developer };
+      let tag = true;
+      for (const resultItem of dayOffNewArr) {
+        if (resultItem.name == item.name) {
+          const timeWindow = resultItem.dataList.map((dataItem) => {
+            return getTime(dataItem, month, year);
+          });
+          const time = getTime(data, month, year);
+          if (
+            checkTime(timeWindow, time.start, time.end) ||
+            resultItem.dataList.length == 0
+          ) {
+            resultItem.dataList.push(data);
+            tag = false;
+            break;
+          }
+        }
+      }
+      let index = (
+        dayOffNewArr.find((data) => data.name == item.name) || { index: -1 }
+      ).index;
+      if (tag) {
+        item.dataList = [data];
+        item.index = index > 0 ? index : ++count;
+        dayOffNewArr.push(item);
+      }
+    });
+  // 两个数组合并，筛选出 name = none 的
+  let newResult = (result || [])
+    .concat((dayOffNewArr || []).filter((val) => val.dataList.length !== 0))
+    .filter((item) => item.name !== "None");
+  for (const item of newResult) {
+    item.dataList.sort((l, r) => {
+      return l.testDay > r.testDay ? -1 : 1;
+    });
+  }
+  // 按照名字排序
+  newResult = newResult.sort(compare("name"));
+  return newResult;
+}
 function compare(prop) {
   return function (obj1, obj2) {
     var val1 = obj1[prop];

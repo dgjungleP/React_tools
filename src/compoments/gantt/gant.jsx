@@ -660,7 +660,7 @@ function DeveloperReleaseTable(props) {
     {
       title: "Developer",
       key: "Developer",
-      dataIndex: "localTester",
+      dataIndex: "developer",
       sorter: {
         compare: (a, b) => {
           return a.tester > b.tester ? -1 : 1;
