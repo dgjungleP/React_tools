@@ -182,6 +182,7 @@ function DeveloperShceduleTab() {
                 fresh={props.fresh}
               ></DeveloperReleaseTable>
             )}
+            nameWidth={200}
             extra={[]}
           ></ScheduleBody>
         );

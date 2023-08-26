@@ -44,6 +44,7 @@ function Gantt(props) {
           month={month}
           simple={props.simple}
           extra={props.extra}
+          nameWidth={props.nameWidth}
         ></GanttTable>
       </div>
       {props.table(props)}
@@ -78,7 +79,7 @@ function GanttTable(props) {
       title: "name",
       dataIndex: "name",
       key: "name",
-      width: 100,
+      width: props.nameWidth || 100,
       fixed: "left",
       align: "center",
       render: formatName(),

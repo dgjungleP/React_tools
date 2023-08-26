@@ -181,6 +181,7 @@ function ScheduleBody(props) {
           table={table}
           needDayOff={props.needDayOff}
           needOtherJob={props.needOtherJob}
+          nameWidth={props.nameWidth}
         ></Gantt>
       </Spin>
     </>
