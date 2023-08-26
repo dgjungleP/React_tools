@@ -113,7 +113,7 @@ function ScheduleBody(props) {
             return otherJob;
           }
         );
-        newDayoffTableData = props.tryMergeDaoff(newDayoffTableData);
+        newDayoffTableData = props.tryMergeDayoff(newDayoffTableData);
         updateDayoffTable(newDayoffTableData);
         updateOtherJobTable(newOtherJobTableData);
         const newTableData = makeData(newTableDataQuery.data);

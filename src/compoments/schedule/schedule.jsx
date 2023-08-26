@@ -7,9 +7,14 @@ import {
   getSystemConfig,
   getProject,
   getLocalShcedule,
+  getDeveloperShcedule,
 } from "../../server/project-service";
 import { DailyBody } from "../body/daily_body";
-import { LTReleaseTable, ReleaseTable } from "../gantt/gant";
+import {
+  DeveloperReleaseTable,
+  LTReleaseTable,
+  ReleaseTable,
+} from "../gantt/gant";
 const { Content } = Layout;
 
 function SystemTab(props) {
@@ -55,7 +60,7 @@ function ShceduleTab() {
             groupData={(tableData, year, month, selectors) =>
               groupData(tableData, year, month, selectors)
             }
-            tryMergeDaoff={(data) => data}
+            tryMergeDayoff={(data) => data}
             table={(props) => (
               <ReleaseTable
                 data={props.tableData}
@@ -68,7 +73,7 @@ function ShceduleTab() {
           ></ScheduleBody>
         );
       }}
-      filter={(data) => !data.config.localTest}
+      filter={(data) => !data.config.localTest && !data.config.developer}
     ></SystemTab>
   );
 }
@@ -86,7 +91,7 @@ function LTShceduleTab() {
             groupData={(tableData, year, month, selectors) =>
               groupLocalData(tableData, year, month, selectors)
             }
-            tryMergeDaoff={(data) => localTryMergeDayOff(data)}
+            tryMergeDayoff={(data) => localTryMergeDayOff(data)}
             table={(props) => (
               <LTReleaseTable
                 data={props.tableData}
@@ -152,6 +157,86 @@ function LTShceduleTab() {
     ></SystemTab>
   );
 }
+function DeveloperShceduleTab() {
+  return (
+    <SystemTab
+      template={(system) => {
+        return (
+          <ScheduleBody
+            systemConfig={system.config}
+            needDayOff={true}
+            needOtherJob={true}
+            getProject={(query) => getDeveloperShcedule(query)}
+            makeData={(data) => makeLocalData(data)}
+            groupData={(tableData, year, month, selectors) =>
+              groupLocalData(tableData, year, month, selectors)
+            }
+            tryMergeDayoff={(data) => localTryMergeDayOff(data)}
+            table={(props) => (
+              <DeveloperReleaseTable
+                data={props.tableData}
+                updateData={props.updateData}
+                selectors={props.selectors}
+                groups={props.groups}
+                systemConfig={props.system}
+                fresh={props.fresh}
+              ></DeveloperReleaseTable>
+            )}
+            extra={[
+              {
+                title: "Project#",
+                dataIndex: "project",
+                key: "project",
+                width: 100,
+                fixed: "left",
+                align: "center",
+                render: (text, record, index) => {
+                  if (!record.needToolTip) {
+                    return <>{record.project}</>;
+                  }
+                  let bodyTemp = (
+                    <>
+                      <Row>
+                        <span>Project: {record.project}</span>
+                      </Row>
+                      <Row>
+                        <span>ReleaseDate: {record.releaseDate}</span>
+                      </Row>
+                      <Row>
+                        <span>LaunchDate: {record.launchDate}</span>
+                      </Row>
+                    </>
+                  );
+                  return (
+                    <Tooltip
+                      title={() => {
+                        return <Col>{bodyTemp}</Col>;
+                      }}
+                    >
+                      {record.project}
+                    </Tooltip>
+                  );
+                },
+              },
+              {
+                title: "Jira#",
+                dataIndex: "jiraName",
+                key: "jiraName",
+                width: 200,
+                fixed: "left",
+                align: "center",
+                render: (text, record, index) => {
+                  return record.jiraName;
+                },
+              },
+            ]}
+          ></ScheduleBody>
+        );
+      }}
+      filter={(data) => data.config.developer}
+    ></SystemTab>
+  );
+}
 function localTryMergeDayOff(data) {
   return data;
 }
@@ -161,7 +246,7 @@ function DailyTab() {
       template={(system) => {
         return <DailyBody systemConfig={system.config}></DailyBody>;
       }}
-      filter={(data) => !data.config.localTest}
+      filter={(data) => !data.config.localTest && !data.config.developer}
     ></SystemTab>
   );
 }
@@ -460,4 +545,4 @@ function getDays(year, month) {
   var d = new Date(year, month, 0);
   return d.getDate();
 }
-export { ShceduleTab, DailyTab, LTShceduleTab };
+export { ShceduleTab, DailyTab, LTShceduleTab, DeveloperShceduleTab };

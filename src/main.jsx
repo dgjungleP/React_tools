@@ -18,6 +18,7 @@ import {
 } from "react-router-dom";
 import {
   DailyTab,
+  DeveloperShceduleTab,
   LTShceduleTab,
   ShceduleTab,
 } from "./compoments/schedule/schedule";
@@ -36,6 +37,12 @@ function MyMenus(props) {
     {
       label: <Link to="/oe-schedule">OE Schedule</Link>,
       key: "oe-schedule",
+      icon: <PieChartOutlined />,
+    },
+    ,
+    {
+      label: <Link to="/developer-schedule">Developer Schedule</Link>,
+      key: "developer-schedule",
       icon: <PieChartOutlined />,
     },
     {
@@ -93,6 +100,10 @@ ReactDOM.render(
             <Route
               path="/lt-schedule"
               element={<LTShceduleTab></LTShceduleTab>}
+            ></Route>
+            <Route
+              path="/developer-schedule"
+              element={<DeveloperShceduleTab></DeveloperShceduleTab>}
             ></Route>
             <Route path="/daily" element={<DailyTab></DailyTab>}></Route>
             <Route

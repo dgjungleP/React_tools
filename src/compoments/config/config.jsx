@@ -36,6 +36,7 @@ function SystemConfigModal(props) {
   const [needDivision, setNeedDivision] = useState();
   const [needFetch, setNeedFetch] = useState();
   const [localTest, setLocalTest] = useState();
+  const [developer, setDeveloper] = useState();
 
   useEffect(() => {
     updateConfig(config);
@@ -51,6 +52,7 @@ function SystemConfigModal(props) {
     setNeedDivision(config.needDivision);
     setNeedFetch(config.needFetch);
     setLocalTest(config.localTest);
+    setDeveloper(config.developer);
   };
   const handleOk = () => {
     if (!checklimit()) {
@@ -68,6 +70,8 @@ function SystemConfigModal(props) {
     config.needDivision = needDivision;
     config.needFetch = needFetch;
     config.localTest = localTest;
+    config.developer = developer;
+
     const body = { id: config.id, systemName, config: config };
     updateSystemConfig([body]);
     cleanStatus();
@@ -118,6 +122,9 @@ function SystemConfigModal(props) {
   const onLocalTestChange = () => {
     setLocalTest(!localTest);
   };
+  const onDeveloperChange = () => {
+    setDeveloper(!developer);
+  };
   return (
     <Modal
       title="Create System Config"
@@ -137,7 +144,7 @@ function SystemConfigModal(props) {
           ></Input>
         </Row>
         <Row>
-          <span>TesterList:</span>
+          <span>UserList:</span>
           <Select
             mode="tags"
             style={{ width: "100%" }}
@@ -216,6 +223,15 @@ function SystemConfigModal(props) {
             style={{ marginLeft: 5 }}
             checked={localTest}
             onChange={onLocalTestChange}
+            size="small"
+          />
+        </Row>
+        <Row align="middle">
+          <span>Developer:</span>
+          <Switch
+            style={{ marginLeft: 5 }}
+            checked={developer}
+            onChange={onDeveloperChange}
             size="small"
           />
         </Row>
@@ -318,7 +334,7 @@ function SystemConfig(props) {
                         ></Select>
                       </Row>
                       <Row>
-                        <span>Tester List:</span>
+                        <span>User List:</span>
                       </Row>
                       <Row>
                         <Select
@@ -377,6 +393,15 @@ function SystemConfig(props) {
                         <Switch
                           style={{ marginLeft: 5 }}
                           checked={config.localTest}
+                          size="small"
+                          disabled
+                        />
+                      </Row>
+                      <Row align="middle">
+                        <span>Developer:</span>
+                        <Switch
+                          style={{ marginLeft: 5 }}
+                          checked={config.developer}
                           size="small"
                           disabled
                         />
