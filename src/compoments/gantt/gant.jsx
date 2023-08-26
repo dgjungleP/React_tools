@@ -664,12 +664,9 @@ function DeveloperReleaseTable(props) {
       dataIndex: "developer",
       sorter: {
         compare: (a, b) => {
-          return a.tester > b.tester ? -1 : 1;
+          return a.developer > b.developer ? -1 : 1;
         },
       },
-      filters: makeFilter(props.selectors),
-      onFilter: (value, record) => record.tester.indexOf(value) === 0,
-      filterSearch: true,
     },
     {
       title: "StartTime",
@@ -677,7 +674,7 @@ function DeveloperReleaseTable(props) {
       dataIndex: "startTime",
       sorter: {
         compare: (a, b) => {
-          return a.releaseDay > b.releaseDay ? -1 : 1;
+          return a.startTime > b.startTime ? -1 : 1;
         },
       },
     },
@@ -687,7 +684,7 @@ function DeveloperReleaseTable(props) {
       dataIndex: "endTime",
       sorter: {
         compare: (a, b) => {
-          return a.launchDay > b.launchDay ? -1 : 1;
+          return a.endTime > b.endTime ? -1 : 1;
         },
       },
     },
@@ -1086,6 +1083,20 @@ function formatter(i) {
         <>
           <Row>
             <span>Project: {title.project}</span>
+          </Row>
+        </>
+      );
+    } else if (title.key == "developer") {
+      bodyTemp = (
+        <>
+          <Row>
+            <span>Project: {title.project}</span>
+          </Row>
+          <Row>
+            <span>Start Time: {title.startTime}</span>
+          </Row>
+          <Row>
+            <span>End Time: {title.endTime}</span>
           </Row>
         </>
       );

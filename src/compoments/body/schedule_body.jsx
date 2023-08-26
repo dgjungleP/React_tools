@@ -554,12 +554,32 @@ function getDays(year, month) {
 
 function getTime(dataItem, month, year) {
   let start = getDateNumber(dataItem.releaseDay);
-  let end = getDateNumber(dataItem.launchDay);
   let startMoth = getMothNumber(dataItem.releaseDay);
   let startYear = getYearNumber(dataItem.releaseDay);
+  let end = getDateNumber(dataItem.launchDay);
   let endMoth = getMothNumber(dataItem.launchDay);
   let endYear = getYearNumber(dataItem.launchDay);
-
+  return getSimpleTime(
+    getTimeDateYearMonth(dataItem.releaseDay),
+    getTimeDateYearMonth(dataItem.launchDay),
+    month,
+    year
+  );
+}
+function getTimeDateYearMonth(date) {
+  return {
+    date: getDateNumber(date),
+    month: getMothNumber(date),
+    year: getYearNumber(date),
+  };
+}
+function getSimpleTime(startTime, endTime, month, year) {
+  let start = startTime.date;
+  let startMoth = startTime.month;
+  let startYear = startTime.year;
+  let end = endTime.date;
+  let endMoth = endTime.month;
+  let endYear = endTime.year;
   let overload = false;
   if (startMoth < parseInt(month) || startYear < parseInt(year)) {
     start = 1;
@@ -840,15 +860,26 @@ function makeLine(dataList, result, month, year) {
       memo.project = data.project;
       memo.startTime = data.startTime;
       memo.endTime = data.endTime;
-
-      result[start] =
+      memo.user = data.developer;
+      const simpleTime = getSimpleTime(
+        getTimeDateYearMonth(data.startTime),
+        getTimeDateYearMonth(data.endTime),
+        month,
+        year
+      );
+      missCol = [];
+      for (let i = simpleTime.start + 1; i < simpleTime.end; i++) {
+        missCol.push(i);
+      }
+      result[simpleTime.start] =
         data.project +
         "-Release-" +
-        (end - start) +
+        (simpleTime.end - simpleTime.start) +
         "-&" +
         JSON.stringify(memo);
-      result[end] = data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
-      result.dayCount += end - start + 1;
+      result[simpleTime.end] =
+        data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
+      result.dayCount += simpleTime.end - simpleTime.start + 1;
     } else {
       memo.type = "项目";
       memo.project = data.project;
