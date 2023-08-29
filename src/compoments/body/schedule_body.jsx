@@ -868,17 +868,17 @@ function makeLine(dataList, result, month, year) {
         year
       );
       missCol = [];
-      for (let i = simpleTime.start + 1; i < simpleTime.end; i++) {
+      for (let i = simpleTime.start + 1; i <= simpleTime.end; i++) {
         missCol.push(i);
       }
       result[simpleTime.start] =
         data.project +
         "-Release-" +
-        (simpleTime.end - simpleTime.start) +
+        (simpleTime.end - simpleTime.start + 1) +
         "-&" +
         JSON.stringify(memo);
-      result[simpleTime.end] =
-        data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
+      // result[simpleTime.end] =
+      //   data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
       result.dayCount += simpleTime.end - simpleTime.start + 1;
     } else {
       memo.type = "项目";

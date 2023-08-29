@@ -326,25 +326,6 @@ function ReleaseTable(props) {
     },
   };
   const columns = baseColumns;
-  // const columns = baseColumns.map((col) => {
-  //   if (!col.editable) {
-  //     return col;
-  //   }
-  //   return {
-  //     ...col,
-  //     onCell: (record) => {
-  //       return {
-  //         record,
-  //         editable: col.editable,
-  //         dataIndex: col.dataIndex,
-  //         title: col.title,
-  //         handleSave: handleSave,
-  //         selectors: props.selectors,
-  //         type: "multiple",
-  //       };
-  //     },
-  //   };
-  // });
 
   const updateData = (newData) => {
     props.updateData(newData);
