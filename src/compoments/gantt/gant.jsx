@@ -125,6 +125,7 @@ function GanttTable(props) {
     usedTable.scrollTo(0, 0);
     if (now.month() + 1 == month) {
       const index = now.date();
+
       const thList = usedTable.getElementsByTagName("th");
       console.log(thList);
       const thWitdhList = [];
@@ -133,7 +134,7 @@ function GanttTable(props) {
       }
 
       usedTable.scrollTo(
-        thWitdhList.slice(0, index + 1).reduce((l, r) => l + r),
+        thWitdhList.slice(1, index).reduce((l, r) => l + r),
         0
       );
     }
