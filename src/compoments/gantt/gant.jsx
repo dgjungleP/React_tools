@@ -13,7 +13,7 @@ import {
   Select,
   DatePicker,
 } from "antd";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "antd/dist/antd.css";
 import "./gantt.css";
 import {
@@ -87,6 +87,7 @@ function GanttTable(props) {
     },
     ...(props.extra || []),
   ];
+  const table = useRef(document.getElementById("gantt-table-current"));
   for (let i = 1; i <= getDays(year, month); i++) {
     const day = moment(year + "-" + month + "-" + i);
     columns.push({
@@ -108,10 +109,40 @@ function GanttTable(props) {
       onHeaderCell: colorHeaderCell(i, day, simple),
     });
   }
+  const tableListner = setInterval(() => {
+    table.current = document.getElementById("gantt-table-current");
+    if (table.current !== null) {
+      clearInterval(tableListner);
+      handleTable();
+    }
+  }, 1000);
+  const handleTable = () => {
+    const currentTable = table.current;
+    const usedTable =
+      currentTable.getElementsByClassName("ant-table-content")[0];
+
+    const now = moment();
+    usedTable.scrollTo(0, 0);
+    if (now.month() + 1 == month) {
+      const index = now.date();
+      const thList = usedTable.getElementsByTagName("th");
+      console.log(thList);
+      const thWitdhList = [];
+      for (let i = 0; i < thList.length; i++) {
+        thWitdhList.push(thList.item(i).clientWidth);
+      }
+
+      usedTable.scrollTo(
+        thWitdhList.slice(0, index + 1).reduce((l, r) => l + r),
+        0
+      );
+    }
+  };
   return (
     <>
-      <div style={{ width: "95%", margin: "20px auto 0" }}>
+      <div id="gantt-table" style={{ width: "95%", margin: "20px auto 0" }}>
         <Table
+          id="gantt-table-current"
           className="no-point"
           dataSource={sourceData}
           columns={columns}

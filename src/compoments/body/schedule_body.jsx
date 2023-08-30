@@ -17,7 +17,7 @@ import {
 import "antd/dist/antd.css";
 import "./schedule_body.css";
 import { Gantt } from "../gantt/gant";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, VerticalAlignBottomOutlined } from "@ant-design/icons";
 import {
   getDayoff,
   getOtherJob,
@@ -26,6 +26,8 @@ import {
   freshServiceCache,
 } from "../../server/project-service";
 import moment from "moment";
+import * as htmlToImage from "html-to-image";
+import { toPng, toJpeg, toBlob, toPixelData, toSvg } from "html-to-image";
 const { Option } = Select;
 const yearMonthFormatt = "yyyy-MM";
 const { RangePicker } = DatePicker;
@@ -224,6 +226,43 @@ function Header(props) {
       });
     });
   };
+  const downloadPdf = () => {
+    notification.open({
+      message: "Gantt Table",
+      description:
+        "Start download Gantt Table, Please don't do any operation! ",
+      duration: 3,
+    });
+    const table = document.getElementById("gantt-table");
+    setTimeout(() => {
+      document.body.style.zoom = 0.5;
+      htmlToImage
+        .toJpeg(table, {
+          cacheBust: true,
+          pixelRatio: 3,
+          height: table.scrollHeight * 1.05,
+          width: table.scrollWidth * 1.05,
+        })
+        .then((dataUrl) => {
+          document.body.style.zoom = 1;
+          const link = document.createElement("a");
+          link.download = "my-image-name.png";
+          link.href = dataUrl;
+          link.click();
+          notification.open({
+            message: "Gantt Table",
+            description: "Finished download Gantt Table.",
+            duration: 3,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally((data) => {
+          document.body.style.zoom = 1;
+        });
+    }, 3000);
+  };
   return (
     <>
       <Row
@@ -265,13 +304,18 @@ function Header(props) {
           <Switch checked={simple} onChange={onHistoryChange} />
         </Col>
         <Tooltip title="Fresh cache for actrual data">
+          <Button type="primary" onClick={freshCache} shape="circle">
+            <ReloadOutlined />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Download gantt table">
           <Button
             type="primary"
-            onClick={freshCache}
-            style={{ marginRight: "auto" }}
+            onClick={downloadPdf}
+            style={{ marginLeft: 6 }}
             shape="circle"
           >
-            <ReloadOutlined />
+            <VerticalAlignBottomOutlined />
           </Button>
         </Tooltip>
       </Row>
@@ -553,12 +597,6 @@ function getDays(year, month) {
 }
 
 function getTime(dataItem, month, year) {
-  let start = getDateNumber(dataItem.releaseDay);
-  let startMoth = getMothNumber(dataItem.releaseDay);
-  let startYear = getYearNumber(dataItem.releaseDay);
-  let end = getDateNumber(dataItem.launchDay);
-  let endMoth = getMothNumber(dataItem.launchDay);
-  let endYear = getYearNumber(dataItem.launchDay);
   return getSimpleTime(
     getTimeDateYearMonth(dataItem.releaseDay),
     getTimeDateYearMonth(dataItem.launchDay),
@@ -868,17 +906,17 @@ function makeLine(dataList, result, month, year) {
         year
       );
       missCol = [];
-      for (let i = simpleTime.start + 1; i <= simpleTime.end; i++) {
+      for (let i = simpleTime.start + 1; i < simpleTime.end; i++) {
         missCol.push(i);
       }
       result[simpleTime.start] =
         data.project +
         "-Release-" +
-        (simpleTime.end - simpleTime.start + 1) +
+        (simpleTime.end - simpleTime.start) +
         "-&" +
         JSON.stringify(memo);
-      // result[simpleTime.end] =
-      //   data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
+      result[simpleTime.end] =
+        data.project + "-Launch-1" + "-&" + JSON.stringify(memo);
       result.dayCount += simpleTime.end - simpleTime.start + 1;
     } else {
       memo.type = "项目";

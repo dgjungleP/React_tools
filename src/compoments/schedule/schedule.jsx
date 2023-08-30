@@ -468,7 +468,6 @@ function groupLocalData(tableData, year, month, selectors) {
 }
 function groupDeveloperData(tableData, year, month, selectors) {
   let count = selectors.length;
-  // 非 dayoff
   let result = selectors.map((data, index) => ({
     name: data,
     dataList: [],
@@ -482,83 +481,58 @@ function groupDeveloperData(tableData, year, month, selectors) {
       return newData;
     })
   );
-  groupData
-    .filter(
-      (data) =>
-        data.developer && data.developer != "None" && data.type !== "dayoff"
-    )
-    .forEach((data) => {
-      const item = { name: data.developer };
-      let tag = true;
-      for (const resultItem of result) {
-        if (resultItem.name == item.name) {
-          if (resultItem.dataList.length == 0) {
-            resultItem.dataList.push(data);
-            tag = false;
-            break;
+  try {
+    groupData
+      .filter((data) => data.developer && data.developer != "None")
+      .forEach((data) => {
+        const item = { name: data.developer };
+        let tag = true;
+        for (const resultItem of result) {
+          if (resultItem.name == item.name) {
+            const timeWindow = resultItem.dataList.map((dataItem) => {
+              return getSimpleTime(
+                getTimeDateYearMonth(dataItem.startTime),
+                getTimeDateYearMonth(dataItem.endTime),
+                month,
+                year
+              );
+            });
+            const time = getSimpleTime(
+              getTimeDateYearMonth(data.startTime),
+              getTimeDateYearMonth(data.endTime),
+              month,
+              year
+            );
+            if (
+              checkTime(timeWindow, time.start, time.end) ||
+              resultItem.dataList.length == 0
+            ) {
+              resultItem.dataList.push(data);
+              tag = false;
+              break;
+            }
           }
         }
-      }
-      let index = (
-        result.find((data) => data.name == item.name) || { index: 0 }
-      ).index;
-      if (tag) {
-        item.dataList = [data];
-        item.index = index >= 0 ? index : ++count;
-        result.push(item);
-      }
-    });
-  // dayoff
-  let dayOffNewArr = selectors.map((data, index) => ({
-    name: data,
-    dataList: [],
-    index: index,
-  }));
-  groupData
-    .filter(
-      (data) =>
-        data.developer && data.developer != "None" && data.type === "dayoff"
-    )
-    .forEach((data) => {
-      const item = { name: data.developer };
-      let tag = true;
-      for (const resultItem of dayOffNewArr) {
-        if (resultItem.name == item.name) {
-          const timeWindow = resultItem.dataList.map((dataItem) => {
-            return getTime(dataItem, month, year);
-          });
-          const time = getTime(data, month, year);
-          if (
-            checkTime(timeWindow, time.start, time.end) ||
-            resultItem.dataList.length == 0
-          ) {
-            resultItem.dataList.push(data);
-            tag = false;
-            break;
-          }
+        let index = (
+          result.find((data) => data.name == item.name) || { index: -1 }
+        ).index;
+        if (tag) {
+          item.dataList = [data];
+          item.index = index > 0 ? index : ++count;
+          result.push(item);
         }
-      }
-      let index = (
-        dayOffNewArr.find((data) => data.name == item.name) || { index: -1 }
-      ).index;
-      if (tag) {
-        item.dataList = [data];
-        item.index = index > 0 ? index : ++count;
-        dayOffNewArr.push(item);
-      }
-    });
-  // 两个数组合并，筛选出 name = none 的
-  let newResult = (result || [])
-    .concat((dayOffNewArr || []).filter((val) => val.dataList.length !== 0))
-    .filter((item) => item.name !== "None");
-  for (const item of newResult) {
-    item.dataList.sort((l, r) => {
-      return l.testDay > r.testDay ? -1 : 1;
-    });
+      });
+    for (const item of result) {
+      item.dataList.sort((l, r) => {
+        return l.startTime > r.startTime ? -1 : 1;
+      });
+    }
+  } catch (e) {
+    console.log(e);
   }
   // 按照名字排序
-  newResult = newResult.sort(compare("name"));
-  return newResult;
+  result = result.sort(compare("name"));
+  return result;
 }
 function compare(prop) {
   return function (obj1, obj2) {
@@ -574,14 +548,20 @@ function compare(prop) {
   };
 }
 
-function getTime(dataItem, month, year) {
-  let start = getDateNumber(dataItem.releaseDay);
-  let end = getDateNumber(dataItem.launchDay);
-  let startMoth = getMothNumber(dataItem.releaseDay);
-  let startYear = getYearNumber(dataItem.releaseDay);
-  let endMoth = getMothNumber(dataItem.launchDay);
-  let endYear = getYearNumber(dataItem.launchDay);
-
+function getTimeDateYearMonth(date) {
+  return {
+    date: getDateNumber(date),
+    month: getMothNumber(date),
+    year: getYearNumber(date),
+  };
+}
+function getSimpleTime(startTime, endTime, month, year) {
+  let start = startTime.date;
+  let startMoth = startTime.month;
+  let startYear = startTime.year;
+  let end = endTime.date;
+  let endMoth = endTime.month;
+  let endYear = endTime.year;
   let overload = false;
   if (startMoth < parseInt(month) || startYear < parseInt(year)) {
     start = 1;
@@ -595,6 +575,15 @@ function getTime(dataItem, month, year) {
     overload = false;
   }
   return { start, end, overload };
+}
+
+function getTime(dataItem, month, year) {
+  return getSimpleTime(
+    getTimeDateYearMonth(dataItem.releaseDay),
+    getTimeDateYearMonth(dataItem.launchDay),
+    month,
+    year
+  );
 }
 function checkTime(timeWindow, start, end) {
   const timeArray = [];
