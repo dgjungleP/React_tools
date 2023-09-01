@@ -27,7 +27,7 @@ import { HolidayConfig } from "./compoments/config/holiday";
 const { Sider } = Layout;
 function MyMenus(props) {
   const location = useLocation();
-  const baseRoute = location.pathname.split("/")[1];
+  let baseRoute = location.pathname.split("/")[1] || "oe-schedule";
   const items = [
     {
       label: <Link to="/lt-schedule">LT Schedule</Link>,

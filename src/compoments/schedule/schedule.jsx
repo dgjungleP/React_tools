@@ -355,8 +355,8 @@ function makeDeveloperData(json) {
       base.tester = item.localTester;
       base.releaseDay = item.releaseDate;
       base.launchDay = item.launchDate;
-      base.endTime = item.actuallyDoneTime;
-      base.startTime = item.startDate;
+      base.endTime = item.launchDate;
+      base.startTime = item.releaseDate;
       base.developer = item.developer;
       base.key =
         base.project +

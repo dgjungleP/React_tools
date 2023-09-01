@@ -21,6 +21,7 @@ import {
   deleteOtherJob,
   setTester,
   updateLocalShcedule,
+  updateDeveloperShcedule,
 } from "../../server/project-service";
 import { EditableCell, EditableRow } from "../editable/editable";
 import moment from "moment";
@@ -680,9 +681,23 @@ function DeveloperReleaseTable(props) {
           return a.developer > b.developer ? -1 : 1;
         },
       },
+      filters: makeFilter(props.selectors),
+      onFilter: (value, record) => record.developer.indexOf(value) === 0,
+      filterSearch: true,
+      onCell: (record) => {
+        return {
+          record,
+          editable: true,
+          dataIndex: "developer",
+          title: "Tester",
+          handleSave: handleSave,
+          selectors: props.selectors,
+          type: "multiple",
+        };
+      },
     },
     {
-      title: "StartTime",
+      title: "Release Date",
       key: "StartTime",
       dataIndex: "startTime",
       sorter: {
@@ -692,7 +707,7 @@ function DeveloperReleaseTable(props) {
       },
     },
     {
-      title: "EndTime",
+      title: "Launch Date",
       key: "EndTime",
       dataIndex: "endTime",
       sorter: {
@@ -727,26 +742,28 @@ function DeveloperReleaseTable(props) {
       },
     };
   });
-  const showModal = (current) => {
-    setModalVisiable(true);
-    setCurrent(current);
-  };
+
   const updateData = (newData) => {
     props.updateData(newData);
   };
   const handleSave = (row) => {
-    row.tester = (row.tester || []).join(",");
+    console.log(row);
+
+    if (Array.isArray(row.developer)) {
+      row.developer = (row.developer || []).join(",");
+    }
     const newData = [...data];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
     newData.splice(index, 1, { ...item, ...row });
-    setTester({
+    updateDeveloperShcedule({
       projectId: row.project,
-      tester: row.tester,
+      developer: row.developer,
       system: systemConfig.systemName,
       systemId: systemConfig.id,
-    }).then((response) => {});
-    updateData(newData);
+    }).then((response) => {
+      updateData(newData);
+    });
   };
   return (
     <>
@@ -1106,10 +1123,10 @@ function formatter(i) {
             <span>Project: {title.project}</span>
           </Row>
           <Row>
-            <span>Start Time: {title.startTime}</span>
+            <span>Release Date: {title.startTime}</span>
           </Row>
           <Row>
-            <span>End Time: {title.endTime}</span>
+            <span>Launch Date: {title.endTime}</span>
           </Row>
         </>
       );

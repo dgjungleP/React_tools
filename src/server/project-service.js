@@ -17,13 +17,17 @@ function deleteOtherJob(requst) {
 function getLocalShcedule(request) {
   return axios.post(`${baseApi}projects/local`, request);
 }
-function getDeveloperShcedule(request) {
-  return axios.post(`${baseApi}projects/developer`, request);
-}
+
 function updateLocalShcedule(request) {
   return axios.post(`${baseApi}update/local/schedule`, request);
 }
 
+function getDeveloperShcedule(request) {
+  return axios.post(`${baseApi}projects/developer`, request);
+}
+function updateDeveloperShcedule(request) {
+  return axios.post(`${baseApi}update/developer/schedule`, request);
+}
 function getProject(request) {
   return axios.post(`${baseApi}projects`, request);
 }
@@ -113,4 +117,5 @@ export {
   getLocalShcedule,
   updateLocalShcedule,
   getDeveloperShcedule,
+  updateDeveloperShcedule,
 };
