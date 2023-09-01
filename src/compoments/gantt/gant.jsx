@@ -697,7 +697,7 @@ function DeveloperReleaseTable(props) {
       },
     },
     {
-      title: "Release Date",
+      title: "StartDate",
       key: "StartTime",
       dataIndex: "startTime",
       sorter: {
@@ -1123,7 +1123,7 @@ function formatter(i) {
             <span>Project: {title.project}</span>
           </Row>
           <Row>
-            <span>Release Date: {title.startTime}</span>
+            <span>Start Date: {title.startTime}</span>
           </Row>
           <Row>
             <span>Launch Date: {title.endTime}</span>

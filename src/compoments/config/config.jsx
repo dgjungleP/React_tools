@@ -353,7 +353,7 @@ function SystemConfig(props) {
                         </a>
                       </Row>
                       <Row align="middle">
-                        <span>Has Histoty:</span>
+                        <span>Has History:</span>
                         <Switch
                           style={{ marginLeft: 5 }}
                           checked={config.hasHistory}

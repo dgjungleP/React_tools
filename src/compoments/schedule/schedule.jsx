@@ -164,8 +164,8 @@ function DeveloperShceduleTab() {
         return (
           <ScheduleBody
             systemConfig={system.config}
-            needDayOff={false}
-            needOtherJob={false}
+            needDayOff={true}
+            needOtherJob={true}
             getProject={(query) => getDeveloperShcedule(query)}
             makeData={(data) => makeDeveloperData(data)}
             groupData={(tableData, year, month, selectors) =>
@@ -356,7 +356,7 @@ function makeDeveloperData(json) {
       base.releaseDay = item.releaseDate;
       base.launchDay = item.launchDate;
       base.endTime = item.launchDate;
-      base.startTime = item.releaseDate;
+      base.startTime = item.startDate;
       base.developer = item.developer;
       base.key =
         base.project +
